@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Propagate.h"
 
 using namespace std;
