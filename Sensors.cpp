@@ -21,11 +21,48 @@ Sensors::Sensors()
        GLONASS + GPS PA1616D - 99 channel with 10 Hz update
 
     */
+    mem_test = false;
+    initarrays();
+
 }
 
-// TODO: body to inertial (NAV) frame rotation
+void Sensors::body_to_nav(double* q, double* r_body, double* r_nav)
+{
+    // body to inertial (NAV) frame rotation
+    m[0] = 1.0 - 2.0 * (q[2] * q[2]) - 2.0 * (q[3] * q[3]);
+    m[1] = 2.0 * (q[1] * q[2] + q[0] * q[3]);
+    m[2] = 2.0 * (q[1] * q[3] - q[0] * q[2]);
+    m[3] = 2.0 * (q[1] * q[2] - q[0] * q[3]);
+    m[4] = 1.0 - 2.0 * (q[1] * q[1]) - 2.0 * (q[3] * q[3]);
+    m[5] = 2.0 * (q[2] * q[3] + q[0] * q[1]);
+    m[6] = 2.0 * (q[1] * q[3] + q[0] * q[2]);
+    m[7] = 2.0 * (q[2] * q[3] - q[0] * q[1]);
+    m[8] = 1.0 - 2.0 * (q[1] * q[1]) - 2.0 * (q[2] * q[2]);
+
+    int i,j;
+    for (i=0; i<3; i++)
+    {
+        for (j=0; j<3; j++)
+        {
+            r_nav[i] = m[i*3 + j] * r_body[j];
+        }
+    }
+}
+
+void Sensors::initarrays()
+{
+    m    = (double*) calloc (9, sizeof(double));
+    mem_test  = true;
+}
 
 Sensors::~Sensors()
 {
+    if(mem_test==true)
+    {
+    delete [] m;
+
+    cout << "Deallocate Sensors memory" << endl;
+
+    }
 }
 

@@ -12,6 +12,8 @@ int main()
     // unit testing with run time asserts
     // controller tests:
 
+    // TEST-0 : test the quarternion rotation matrix
+
     // assert(TODO);
 
     return 0;
