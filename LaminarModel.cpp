@@ -5,6 +5,7 @@ using namespace std;
 LaminarModel::LaminarModel()
 {
     /* underactuated tethered underwater drone
+       lakes and rivers, assume no turbulence (predictable current or no current)
     */
     n_states = 4;
     n_inputs = 3;
