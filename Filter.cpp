@@ -27,8 +27,17 @@ void Filter::init_model(Model& model)
 
 void Filter::propagate_update(double t, double* input_data)
 {
-    /* propagate the prior estimate
+    /* fusion of IMU+GPS+ultrasonic data
+       propagate the prior estimate
        update the posterior estimate
+
+       accelerometer bias, beta, propagates into velocity and position error
+       50 <= beta <= 1000 microg
+       ~2500 (microg) ** 2 / Hz white noise
+
+       gyro bias or drift rate, epsilon, integrates into attitude error
+       0.01 <= epsilon <= 10 deg / hr
+       ~1.e-6 (deg / s) ** 2 / Hz white noise
     */
     double dt;
     dt = t - t0;

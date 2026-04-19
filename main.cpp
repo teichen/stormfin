@@ -28,6 +28,17 @@ int main()
     Drivers drivers; // utility functions, e.g. effective thrust inputs
     Controller controller; // sensor fusion, estimation, navigation
 
+    /* while operational,
+       (1) process sensor data
+       (2) determine operating state
+           (a) ROV manual
+           (b) circling surveilance
+           (c) target acquisition - stalking
+           (d) target acquisition - abandon to surface
+       (2) run estimation and navigation routines
+       (3) adjust thrust
+    */
+
     ProfilerStop();
 
     return 0;

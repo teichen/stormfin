@@ -4,6 +4,8 @@ using namespace std;
 
 LaminarModel::LaminarModel()
 {
+    /* underactuated tethered underwater drone
+    */
     n_states = 4;
     n_inputs = 3;
 
