@@ -1,4 +1,4 @@
-#include <iostream>
+#include <stdlib.h>
 #include "Sensors.h"
 
 using namespace std;
@@ -66,9 +66,6 @@ Sensors::~Sensors()
     if(mem_test==true)
     {
     delete [] m;
-
-    cout << "Deallocate Sensors memory" << endl;
-
     }
 }
 

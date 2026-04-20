@@ -1,4 +1,4 @@
-#include <iostream>
+#include <stdlib.h>
 #include "Collocation.h"
 
 using namespace std;

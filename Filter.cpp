@@ -1,4 +1,5 @@
 #include "Filter.h"
+#include <stdlib.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
 
@@ -261,8 +262,5 @@ Filter::~Filter()
     delete [] x_post;
     delete [] sig_prior;
     delete [] sig_post;
-
-    cout << "Deallocate Filter memory" << endl;
-
     }
 }
