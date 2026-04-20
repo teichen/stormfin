@@ -56,13 +56,11 @@ int main()
     bno.getCalibration(&system, &gyro, &accel, &mag);
 
     imu::Quaternion quat = bno.getQuat();
+    imu::Vector<3> gyro_data = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
     */
     double q[4];
-    q[0] = 0.0;
-    q[1] = 0.0;
-    q[2] = 0.0;
-    q[3] = 0.0;
 
+    // TODO: swap in quat data
     q[0] = 0.0; // quat.w();
     q[1] = 0.0; // quat.x();
     q[2] = 0.0; // quat.y();
@@ -77,6 +75,23 @@ int main()
     r_nav[1] = 0.0;
     r_nav[2] = 0.0;
     sensors.body_to_nav(q, r_body, r_nav);
+
+    /* body frame sufficient for stabilization, navigation frame needed for
+       fusion with GPS and fault tolerance
+    */
+    double omega_body[4];
+    // TODO: swap in gyro_data
+    omega_body[0] = 0.0;
+    omega_body[1] = 1.0; // gyro_data[0];
+    omega_body[2] = 0.0; // gyro_data[1];
+    omega_body[3] = 0.0; // gyro_data[2];
+    double omega_nav[4];
+    int i;
+    for (i=0; i<4; i++)
+    {
+        omega_nav[i] = omega_body[i];
+    }
+    sensors.qrot_pure(q, omega_nav);
 
     ProfilerStop();
 

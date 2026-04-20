@@ -5,7 +5,6 @@ using std::cout;
 using std::endl;
 #include <math.h>
 #include <cmath>
-#include "../Controller.h"
 #include "../Sensors.h"
 
 using namespace std;
@@ -101,8 +100,6 @@ int main()
     assert(std::abs(omega_nav[1]) < 1.0e-10);
     assert(omega_nav[2] == 1.0);
     assert(std::abs(omega_nav[3]) < 1.0e-10);
-
-    // controller tests:
 
     return 0;
 }
