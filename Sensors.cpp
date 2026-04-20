@@ -68,9 +68,9 @@ void Sensors::qrot_pure(double* q, double* a)
 
     // q* = q^-1 = (q[0], -v)
     a_rot[0] = qa[0] * q[0] + (qa[1] * q[1] + qa[2] * q[2] + qa[3] * q[3]);
-    a_rot[1] = -qa[0] * q[1] + q[0] * qa[1] + (qa[2] * q[3] - qa[3] * q[2]);
-    a_rot[2] = -qa[0] * q[2] + q[0] * qa[2] + (qa[3] * q[1] - qa[1] * q[3]);
-    a_rot[3] = -qa[0] * q[3] + q[0] * qa[3] + (qa[1] * q[2] - qa[2] * q[1]);
+    a_rot[1] = -qa[0] * q[1] + q[0] * qa[1] - (qa[2] * q[3] - qa[3] * q[2]);
+    a_rot[2] = -qa[0] * q[2] + q[0] * qa[2] - (qa[3] * q[1] - qa[1] * q[3]);
+    a_rot[3] = -qa[0] * q[3] + q[0] * qa[3] - (qa[1] * q[2] - qa[2] * q[1]);
 
     int i;
     for (i=0; i<4; i++)

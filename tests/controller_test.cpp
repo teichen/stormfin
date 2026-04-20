@@ -92,6 +92,16 @@ int main()
         assert(omega_nav[i] == omega_body[i]);
     }
 
+    psi = 0.5 * PI; // unit x -> unit y (rot about z)
+    set_quarternion(q, psi, theta, phi);
+    
+    sensors.qrot_pure(q, omega_nav);
+
+    assert(std::abs(omega_nav[0]) < 1.0e-10);
+    assert(std::abs(omega_nav[1]) < 1.0e-10);
+    assert(omega_nav[2] == 1.0);
+    assert(std::abs(omega_nav[3]) < 1.0e-10);
+
     // controller tests:
 
     return 0;
