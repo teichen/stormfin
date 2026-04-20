@@ -70,6 +70,28 @@ int main()
     assert(r_nav[1] == 1.0);
     assert(std::abs(r_nav[2]) < 1.0e-10);
 
+    // TEST-1 : test a pure quarternion rotation
+    double omega_body[4];
+    omega_body[0] = 0.0;
+    omega_body[1] = 1.0;
+    omega_body[2] = 0.0;
+    omega_body[3] = 0.0;
+
+    double omega_nav[4];
+    for (i=0; i<4; i++)
+    {
+        omega_nav[i] = omega_body[i];
+    }
+
+    psi   = 0.0;
+    set_quarternion(q, psi, theta, phi);
+    sensors.qrot_pure(q, omega_nav);
+
+    for (i=0; i<4; i++)
+    {
+        assert(omega_nav[i] == omega_body[i]);
+    }
+
     // controller tests:
 
     return 0;

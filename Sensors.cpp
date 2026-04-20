@@ -38,7 +38,7 @@ void Sensors::process(double* inputs)
     inputs[0] *= 10.0; // placeholder
 }
 
-void Sensors::body_to_nav(double* q, double* r_body, double* r_nav)
+void Sensors::set_qrot(double* q)
 {
     // body to inertial (NAV) frame rotation
     m[0] = 1.0 - 2.0 * (q[2] * q[2]) - 2.0 * (q[3] * q[3]);
@@ -50,6 +50,38 @@ void Sensors::body_to_nav(double* q, double* r_body, double* r_nav)
     m[6] = 2.0 * (q[1] * q[3] - q[0] * q[2]);
     m[7] = 2.0 * (q[2] * q[3] + q[0] * q[1]);
     m[8] = 1.0 - 2.0 * (q[1] * q[1]) - 2.0 * (q[2] * q[2]);
+}
+
+void Sensors::qrot_pure(double* q, double* a)
+{
+    // pure quarternion rotation, a = q x a x q^-1
+    double a_rot[4];
+
+    // q = (q[0], qv) where qv = q[1:3]
+    // a = (a[0], av) where av = a[1:3]
+    // q x a = (q[0] * a[0] - qv dot av, q[0] * av + a[0] * qv + qv cross av)
+    double qa[4];
+    qa[0] = q[0] * a[0] - (q[1] * a[1] + q[2] * a[2] + q[3] * a[3]);
+    qa[1] = q[0] * a[1] + a[0] * q[1] + (q[2] * a[3] - q[3] * a[2]);
+    qa[2] = q[0] * a[2] + a[0] * q[2] + (q[3] * a[1] - q[1] * a[3]);
+    qa[3] = q[0] * a[3] + a[0] * q[3] + (q[1] * a[2] - q[2] * a[1]);
+
+    // q* = q^-1 = (q[0], -v)
+    a_rot[0] = qa[0] * q[0] + (qa[1] * q[1] + qa[2] * q[2] + qa[3] * q[3]);
+    a_rot[1] = -qa[0] * q[1] + q[0] * qa[1] + (qa[2] * q[3] - qa[3] * q[2]);
+    a_rot[2] = -qa[0] * q[2] + q[0] * qa[2] + (qa[3] * q[1] - qa[1] * q[3]);
+    a_rot[3] = -qa[0] * q[3] + q[0] * qa[3] + (qa[1] * q[2] - qa[2] * q[1]);
+
+    int i;
+    for (i=0; i<4; i++)
+    {
+        a[i] = a_rot[i];
+    }
+}
+
+void Sensors::body_to_nav(double* q, double* r_body, double* r_nav)
+{
+    set_qrot(q);
 
     int i,j;
     for (i=0; i<3; i++)
