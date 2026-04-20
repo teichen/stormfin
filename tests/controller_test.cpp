@@ -17,6 +17,11 @@ void set_quarternion(double* q, double psi, double theta, double phi){
        psi   : yaw
        theta : pitch
        phi   : roll
+    
+       q[0] : w (scalar)
+       q[1] : x
+       q[2] : y
+       q[3] : z
     */ 
     q[0] = std::cos(0.5 * psi) * std::cos(0.5 * theta) * std::cos(0.5 * phi)
          + std::sin(0.5 * psi) * std::sin(0.5 * theta) * std::sin(0.5 * phi);

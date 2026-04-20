@@ -31,6 +31,13 @@ Sensors::Sensors()
 
 }
 
+void Sensors::process(double* inputs)
+{
+    /* sensor data
+    */
+    inputs[0] *= 10.0; // placeholder
+}
+
 void Sensors::body_to_nav(double* q, double* r_body, double* r_nav)
 {
     // body to inertial (NAV) frame rotation

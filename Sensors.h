@@ -15,7 +15,7 @@ public:
 
     void initarrays();
 
-    void propagate_update(double, double*);
+    void process(double*);
     void body_to_nav(double*, double*, double*);
 
     ~Sensors();
