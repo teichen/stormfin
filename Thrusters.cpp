@@ -1,9 +1,9 @@
 #include <stdlib.h>
-#include "Drivers.h"
+#include "Thrusters.h"
 
 using namespace std;
 
-Drivers::Drivers()
+Thrusters::Thrusters()
 {
     /* A2212 930KV brushless motors
        60mm blade propellers
@@ -12,7 +12,7 @@ Drivers::Drivers()
     */
 }
 
-void Drivers::thrust_to_pwm(double* u, double* pwm)
+void Thrusters::thrust_to_pwm(double* u, double* pwm)
 {
     /* provided a thrust, u [=] N, estimate a PWM (mapped) in microseconds
        u ~ c * PWM ** 2 where c is a coefficient of thrust
@@ -20,7 +20,7 @@ void Drivers::thrust_to_pwm(double* u, double* pwm)
     */
 }
 
-Drivers::~Drivers()
+Thrusters::~Thrusters()
 {
 }
 

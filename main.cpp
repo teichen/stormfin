@@ -1,7 +1,7 @@
 #include <iostream>
 #include "Controller.h"
 #include "Sensors.h"
-#include "Drivers.h"
+#include "Thrusters.h"
 #include <gperftools/profiler.h>
 
 #define COM 0x55
@@ -36,7 +36,7 @@ int main()
     ProfilerStart("/tmp/prof.out"); // memory profiler
 
     Sensors sensors; // utility functions, e.g. ref frame rotations
-    Drivers drivers; // utility functions, e.g. effective thrust inputs
+    Thrusters thrusters; // utility functions, e.g. effective thrust inputs
     Controller controller; // sensor fusion, estimation, navigation
 
     /*
