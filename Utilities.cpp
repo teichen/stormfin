@@ -9,6 +9,18 @@ Utilities::Utilities()
 {
 }
 
+void Utilities::matrix_transpose(double* a, int n_a0, int n_a1, double* a_transpose)
+{
+    int i,j;
+    for (i=0; i<n_a0; i++)
+    {
+        for (j=0; j<n_a1; j++)
+        {
+            a_transpose[i * n_a1 + j] = a[j * n_a0 + i];
+        }
+    }
+}
+
 void Utilities::matrix_inv(double* a, int n_a0, int n_a1, double* a_inv)
 {
     /* matrix inversion, inv(A) = A_inv

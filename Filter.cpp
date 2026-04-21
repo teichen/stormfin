@@ -66,13 +66,7 @@ void Filter::update(double* x, double* inputs)
         noise[i * n_in + i] = 0.001;
     }
 
-    for (i=0; i<n; i++)
-    {
-        for (j=0; j<n_in; j++)
-        {
-            jacobian_T[i * n_in + j] = jacobian[j * n + i];
-        }
-    }
+    utilities.matrix_transpose(jacobian, n, n_in, jacobian_T);
 
     calc_estimates(x, estimates);
 
@@ -82,14 +76,7 @@ void Filter::update(double* x, double* inputs)
 
     utilities.matrix_mult(jacobian, n_in, n, sig_prior, n, n, jac_sig, n_in, n);
 
-    // TODO: add transpose function to utilities
-    for (i=0; i<n_in; i++)
-    {
-        for (j=0; j<n; j++)
-        {
-            jac_sig_T[j * n_in + i] = jac_sig[i * n + j];
-        }
-    }
+    utilities.matrix_transpose(jac_sig, n_in, n, jac_sig_T);
 
     utilities.matrix_mult(jac_sig, n_in, n, jacobian_T, n, n_in, sig_inputs, n_in, n_in);
 
@@ -109,13 +96,7 @@ void Filter::update(double* x, double* inputs)
 
     utilities.matrix_mult(inputs_noise_inv, n_in, n_in, jac_sig, n_in, n, gain, n_in, n);
 
-    for (i=0; i<n; i++)
-    {
-        for (j=0; j<n_in; j++)
-        {
-            gain_T[i * n_in + j] = gain[j * n + i];
-        }
-    }
+    utilities.matrix_transpose(gain, n_in, n, gain_T);
 
     for (i=0; i<n_in; i++)
     {

@@ -14,6 +14,7 @@ public:
 
     Utilities();
 
+    void matrix_transpose(double*, int, int, double*);
     void matrix_inv(double*, int, int, double*);
     void matrix_mult(double*, int, int, double*, int, int, double*, int, int);
 
