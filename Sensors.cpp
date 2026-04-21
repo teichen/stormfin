@@ -7,7 +7,8 @@ Sensors::Sensors()
 {
     /* DFRobot IP68 6m UART ultrasonic sensor, ~30ft depth, 20ft distance capacity
        TTL Serial (UART) protocol with Arduino
-       VIN-5V, SDA-SDA, SLC-SCL, GND-GND
+       VIN-5V, D2 (white), D3 (yellow), GND-GND
+       transducer is engineered for the density and sound speed of water
        echoTime
        distance = echoTime * 0.0343 / 2.
 
