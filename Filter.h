@@ -4,8 +4,7 @@
 
 #include "Model.h"
 #include "RungeKutta.h"
-
-#include <gsl/gsl_blas.h>
+#include "Utilities.h"
 
 #include <iostream>
 
@@ -21,6 +20,7 @@ public:
     void init_model(Model&);
 
     RungeKutta propagator;
+    Utilities utilities;
 
     int n;
     int n_in;
@@ -43,8 +43,6 @@ public:
     void set_prior(double*, double*);
     void set_posterior(double*, double*);
     void update(double*, double*);
-
-    void matrix_mult(gsl_matrix_view, gsl_matrix_view, gsl_matrix_view);
 
     ~Filter();
 

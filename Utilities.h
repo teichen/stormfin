@@ -1,0 +1,25 @@
+// Utilities.h
+#ifndef _UTILITIES
+#define _UTILITIES
+
+#include <gsl/gsl_blas.h>
+
+#include <iostream>
+
+using namespace std;
+
+class Utilities
+{
+public:
+
+    Utilities();
+
+    void matrix_inv(double*, int, int, double*);
+    void matrix_mult(double*, int, int, double*, int, int, double*, int, int);
+
+    ~Utilities();
+
+private:
+};
+
+#endif
