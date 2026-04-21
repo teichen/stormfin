@@ -9,6 +9,9 @@ class Collocation
 public:
 
     Collocation();
+
+    void optimal_thrust(double*, double*, double*);
+
     ~Collocation();
 
 private:

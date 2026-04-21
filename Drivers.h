@@ -9,6 +9,9 @@ class Drivers
 public:
 
     Drivers();
+
+    void thrust_to_pwm(double*, double*);
+
     ~Drivers();
 
 private:
