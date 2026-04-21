@@ -1,0 +1,10 @@
+Bill of Materials
+
+SP17 IP68 10 pin waterproof connectors
+A2212 930KV brushless motors
+55mID 60mmOD 4 blade propellers
+DFRobot IP68 6m UART ultrasonic sensor
+BNO055 IMU sensor
+Arduino Due
+3S LiPo Battery (11.1V) with charger
+GLONASS + GPS PA1616D - 99 channel w/ 10Hz
