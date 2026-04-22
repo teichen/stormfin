@@ -107,6 +107,35 @@ int LaminarModel::rate(double t, const double x[], double f[], void *params)
     return GSL_SUCCESS;
 }
 
+int LaminarModel::jacobian(double t, const double x[], double *dfdx, double dfdt[], void *params)
+{
+    int i, j;
+    for (i=0; i<n_states; i++)
+    {
+        dfdt[i] = 0.0;
+        for (j=0; j<n_states; j++)
+        {
+            dfdx[i * n_states + j] = 0.0;
+        }
+    }
+    
+    dfdt[SI_X] = x[SI_A_X];
+    dfdt[SI_Y] = x[SI_A_Y];
+    dfdt[SI_Z] = x[SI_A_Z];
+
+    dfdx[SI_THETA_X * n_states + SI_THETA_X] = 1.0;
+    dfdx[SI_THETA_Y * n_states + SI_THETA_Y] = 1.0;
+    dfdx[SI_THETA_Z * n_states + SI_THETA_Z] = 1.0;
+    dfdx[SI_X * n_states + SI_V_X] = 1.0;
+    dfdx[SI_Y * n_states + SI_V_Y] = 1.0;
+    dfdx[SI_Z * n_states + SI_V_Z] = 1.0;
+    dfdx[SI_V_X * n_states + SI_A_X] = 1.0;
+    dfdx[SI_V_Y * n_states + SI_A_Y] = 1.0;
+    dfdx[SI_V_Z * n_states + SI_A_Z] = 1.0;
+
+    return GSL_SUCCESS;
+}
+
 void LaminarModel::map_inputs_states(double* x, double* f)
 {
     /* map of states onto inputs

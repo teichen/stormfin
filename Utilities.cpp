@@ -60,7 +60,7 @@ void Utilities::ode_iv(Model& model, double* x0, double* x, int n_x, double dt)
     const gsl_odeiv2_step_type * T = gsl_odeiv2_step_rk4;
     gsl_odeiv2_step * s = gsl_odeiv2_step_alloc (T, n_x);
 
-    gsl_odeiv2_system sys = {model.rate, NULL, size_x, &param}; // TODO: NULL <- jacobian argument
+    gsl_odeiv2_system sys = {model.rate, model.jacobian, size_x, &param};
 
     double h = 0.01; // step size
     double x_err[n_x];

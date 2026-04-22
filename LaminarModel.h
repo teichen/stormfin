@@ -17,6 +17,8 @@ public:
     bool mem_test;
 
     static int rate(double, const double[], double[], void*);
+    static int jacobian(double, const double[], double*, double[], void*);
+
     void map_inputs_states(double*, double*);
 
     void initarrays();
