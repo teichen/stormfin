@@ -18,6 +18,12 @@ Arduino Due
     8. GLONASS + GPS PA1616D - 99 channel w/ 10Hz
 
 ## software overview
+```mermaid
+classDiagram
+    LaminarModel <|-- Model
+    Filter ..> Utilities
+    Sensors : +void qrot_pure(q, a)
+```
 
 ## test plan
     1. prototype
