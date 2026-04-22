@@ -18,7 +18,6 @@ public:
 
     static int rate(double, const double[], double[], void*);
     void map_inputs_states(double*, double*);
-    void ode_iv(double*, double*, int, double);
 
     void initarrays();
 

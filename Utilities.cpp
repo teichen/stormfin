@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_odeiv2.h>
 
 using namespace std;
 
@@ -45,6 +48,47 @@ void Utilities::matrix_mult(double* a, int n_a0, int n_a1, double* b, int n_b0, 
     gsl_matrix_view c_matrix = gsl_matrix_view_array(c, n_a0, n_b1);
 
     gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, &a_matrix.matrix, &b_matrix.matrix, 0.0, &c_matrix.matrix);
+}
+
+void Utilities::ode_iv(Model& model, double* x0, double* x, int n_x, double dt)
+{
+    /* RK4 integrate an ode rate function, f
+    */
+    double param = 0.0; // placeholder, rates can take parameters
+    size_t size_x = n_x;
+
+    const gsl_odeiv2_step_type * T = gsl_odeiv2_step_rk4;
+    gsl_odeiv2_step * s = gsl_odeiv2_step_alloc (T, n_x);
+
+    gsl_odeiv2_system sys = {model.rate, NULL, size_x, &param}; // TODO: NULL <- jacobian argument
+
+    double h = 0.01; // step size
+    double x_err[n_x];
+
+    double t0 = 0.0;
+    double t = t0;
+
+    double dxdt_in[n_x], dxdt_out[n_x];
+
+    int i, status;
+    while (t < dt)
+    {
+        status = gsl_odeiv2_step_apply (s, t, h, x, x_err, dxdt_in, dxdt_out, &sys);
+
+        if (status != GSL_SUCCESS) {
+            fprintf(stderr, "Error in evolution\n");
+            break;
+        }
+
+        // update
+        for (i=0; i<n_x; i++)
+        {
+            dxdt_in[i] = dxdt_out[i];
+        }
+        t += h;
+    }
+
+    gsl_odeiv2_step_free (s);
 }
 
 

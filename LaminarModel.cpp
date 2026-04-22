@@ -1,8 +1,6 @@
 #include "LaminarModel.h"
 #include <stdlib.h>
 #include <gsl/gsl_errno.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_odeiv2.h>
 
 using namespace std;
 
@@ -90,46 +88,6 @@ void LaminarModel::map_inputs_states(double* x, double* f)
     }
 }
 
-void LaminarModel::ode_iv(double* x0, double* x, int n_x, double dt)
-{
-    /* RK4 integrate an ode rate function, f
-    */
-    double param = 0.0; // placeholder, rates can take parameters
-    size_t size_x = n_x;
-
-    const gsl_odeiv2_step_type * T = gsl_odeiv2_step_rk4;
-    gsl_odeiv2_step * s = gsl_odeiv2_step_alloc (T, n_x);
-
-    gsl_odeiv2_system sys = {rate, NULL, size_x, &param}; // TODO: NULL <- jacobian argument
-
-    double h = 0.01; // step size
-    double x_err[n_x];
-
-    double t0 = 0.0;
-    double t = t0;
-
-    double dxdt_in[n_x], dxdt_out[n_x];
-
-    int i, status;
-    while (t < dt)
-    {
-        status = gsl_odeiv2_step_apply (s, t, h, x, x_err, dxdt_in, dxdt_out, &sys);
-
-        if (status != GSL_SUCCESS) {
-            fprintf(stderr, "Error in evolution\n");
-            break;
-        }
-
-        // update
-        for (i=0; i<n_x; i++)
-        {
-            dxdt_in[i] = dxdt_out[i];
-        }
-        t += h;
-    }
-
-    gsl_odeiv2_step_free (s);
-}
 
 void LaminarModel::initarrays()
 {
