@@ -12,8 +12,8 @@ public:
 
     Model();
 
-    int n;
-    int n_in;
+    int n_s; // states
+    int n_m; // measurements
 
     static int rate(double, const double[], double[], void*);
     static int jacobian(double, const double[], double*, double[], void*);

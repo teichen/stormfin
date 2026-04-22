@@ -22,7 +22,8 @@ public:
     void linearized_rate(double*, double*);
     void linearized_jacobian(double*, double*);
 
-    void map_inputs_states(double*, double*);
+    void estimate_measurements(double*, double*);
+    void measurement_jacobian(double*, double*);
 
     void initarrays();
 

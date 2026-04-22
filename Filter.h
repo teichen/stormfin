@@ -20,8 +20,8 @@ public:
 
     Utilities utilities;
 
-    int n;
-    int n_in;
+    int n_s;
+    int n_m;
     double* x_post;
     double* x_prior;
     double* sig_post;

@@ -10,8 +10,8 @@ Filter::Filter()
 
 void Filter::init_model(Model& model)
 {
-    n    = model.n;
-    n_in = model.n_in;
+    n_s = model.n_s;
+    n_m = model.n_m;
 
     initarrays();
 
@@ -48,63 +48,63 @@ void Filter::propagate_update(double t, double* input_data)
 
 void Filter::update(double* x, double* inputs)
 {
-    double gain[n_in * n];
-    double gain_T[n_in * n];
-    double noise[n_in * n_in];
-    double residuals[n_in];
-    double estimates[n_in];
-    double jacobian[n * n_in];
-    double jacobian_T[n_in * n];
+    double gain[n_m * n_s];
+    double gain_T[n_m * n_s];
+    double noise[n_m * n_m];
+    double residuals[n_m];
+    double estimates[n_m];
+    double jacobian[n_s * n_m];
+    double jacobian_T[n_m * n_s];
 
     int i,j;
 
-    for (i=0; i<n_in; i++)
+    for (i=0; i<n_m; i++)
     {
-        noise[i * n_in + i] = 0.001;
+        noise[i * n_m + i] = 0.001;
     }
 
-    utilities.matrix_transpose(jacobian, n, n_in, jacobian_T);
+    utilities.matrix_transpose(jacobian, n_s, n_m, jacobian_T);
 
     calc_estimates(x, estimates);
 
-    double jac_sig[n_in * n];
-    double jac_sig_T[n_in * n];
-    double sig_inputs[n_in * n_in];
+    double jac_sig[n_m * n_s];
+    double jac_sig_T[n_m * n_s];
+    double sig_inputs[n_m * n_m];
 
-    utilities.matrix_mult(jacobian, n_in, n, sig_prior, n, n, jac_sig, n_in, n);
+    utilities.matrix_mult(jacobian, n_m, n_s, sig_prior, n_s, n_s, jac_sig, n_m, n_s);
 
-    utilities.matrix_transpose(jac_sig, n_in, n, jac_sig_T);
+    utilities.matrix_transpose(jac_sig, n_m, n_s, jac_sig_T);
 
-    utilities.matrix_mult(jac_sig, n_in, n, jacobian_T, n, n_in, sig_inputs, n_in, n_in);
+    utilities.matrix_mult(jac_sig, n_m, n_s, jacobian_T, n_s, n_m, sig_inputs, n_m, n_m);
 
-    double inputs_noise[n_in * n_in];
+    double inputs_noise[n_m * n_m];
 
-    for (i=0; i<n_in; i++)
+    for (i=0; i<n_m; i++)
     {
-        for (j=0; j<n_in; j++)
+        for (j=0; j<n_m; j++)
         {
-            inputs_noise[i * n_in + j] = sig_inputs[i * n_in + j] + noise[i * n_in + j];
+            inputs_noise[i * n_m + j] = sig_inputs[i * n_m + j] + noise[i * n_m + j];
         }
     }
 
-    double inputs_noise_inv[n_in * n_in];
+    double inputs_noise_inv[n_m * n_m];
 
-    utilities.matrix_inv(inputs_noise, n_in, n_in, inputs_noise_inv);
+    utilities.matrix_inv(inputs_noise, n_m, n_m, inputs_noise_inv);
 
-    utilities.matrix_mult(inputs_noise_inv, n_in, n_in, jac_sig, n_in, n, gain, n_in, n);
+    utilities.matrix_mult(inputs_noise_inv, n_m, n_m, jac_sig, n_m, n_s, gain, n_m, n_s);
 
-    utilities.matrix_transpose(gain, n_in, n, gain_T);
+    utilities.matrix_transpose(gain, n_m, n_s, gain_T);
 
-    for (i=0; i<n_in; i++)
+    for (i=0; i<n_m; i++)
     {
         residuals[i] = inputs[i] - estimates[i];
     }
 
-    double dx[n];
+    double dx[n_s];
 
-    utilities.matrix_mult(gain_T, n, n_in, residuals, n_in, 1, dx, n, 1);
+    utilities.matrix_mult(gain_T, n_s, n_m, residuals, n_m, 1, dx, n_s, 1);
 
-    for (i=0; i<n; i++)
+    for (i=0; i<n_s; i++)
     {
         x_post[i] = x_prior[i] + dx[i];
     }
@@ -115,9 +115,9 @@ void Filter::calc_estimates(double* x, double* estimates)
     // linearized jacobian to back out linearized estimates
     
     int i,j;
-    for (i=0; i<n_in; i++)
+    for (i=0; i<n_m; i++)
     {
-        for (j=0; j<n; j++)
+        for (j=0; j<n_s; j++)
         {
             estimates[i] = 0.0; // TODO: estimates[i] = jacobian[i*n + j] * x[j];
         }
@@ -127,12 +127,12 @@ void Filter::calc_estimates(double* x, double* estimates)
 void Filter::set_prior(double* x, double* sigma)
 {
     int i,j;
-    for (i=0; i<n; i++)
+    for (i=0; i<n_s; i++)
     {
         x_prior[i] = x[i];
-        for (j=0; j<n; j++)
+        for (j=0; j<n_s; j++)
         {
-            sig_prior[i*n + j] = sigma[i*n + j];
+            sig_prior[i*n_s + j] = sigma[i*n_s + j];
         }
     }
 }
@@ -140,12 +140,12 @@ void Filter::set_prior(double* x, double* sigma)
 void Filter::set_posterior(double* x, double* sigma)
 {
     int i,j;
-    for (i=0; i<n; i++)
+    for (i=0; i<n_s; i++)
     {
         x_post[i] = x[i];
-        for (j=0; j<n; j++)
+        for (j=0; j<n_s; j++)
         {
-            sig_post[i*n + j] = sigma[i*n + j];
+            sig_post[i*n_s + j] = sigma[i*n_s + j];
         }
     }
 }
@@ -154,21 +154,21 @@ void Filter::initialize_state()
 {
     int i, j;
     
-    for (i=0; i<n; i++)
+    for (i=0; i<n_s; i++)
     {
         x_prior[i] = 0.0;
         x_post[i]  = 0.0;
-        for (j=0; j<n; j++)
+        for (j=0; j<n_s; j++)
         {
             if (i == j)
             {
-                sig_prior[i*n + j] = 0.001;
-                sig_post[i*n + j]  = 0.001;
+                sig_prior[i*n_s + j] = 0.001;
+                sig_post[i*n_s + j]  = 0.001;
             }
             else
             {
-                sig_prior[i*n + j] = 0.0;
-                sig_post[i*n + j]  = 0.0;
+                sig_prior[i*n_s + j] = 0.0;
+                sig_post[i*n_s + j]  = 0.0;
             }
         }
     }
@@ -176,13 +176,13 @@ void Filter::initialize_state()
 
 void Filter::initarrays()
 {
-    x_prior   = (double*) calloc (n, sizeof(double));
-    x_post    = (double*) calloc (n, sizeof(double));
-    sig_prior = (double*) calloc (n * n, sizeof(double));
-    sig_post  = (double*) calloc (n * n, sizeof(double));
+    x_prior   = (double*) calloc (n_s, sizeof(double));
+    x_post    = (double*) calloc (n_s, sizeof(double));
+    sig_prior = (double*) calloc (n_s * n_s, sizeof(double));
+    sig_post  = (double*) calloc (n_s * n_s, sizeof(double));
 
-    linearized_rate = (double*) calloc (n, sizeof(double));
-    linearized_jacobian = (double*) calloc (n * n, sizeof(double));
+    linearized_rate = (double*) calloc (n_s, sizeof(double));
+    linearized_jacobian = (double*) calloc (n_s * n_s, sizeof(double));
 
     mem_test  = true;
 }

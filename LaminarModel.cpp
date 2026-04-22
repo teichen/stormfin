@@ -5,7 +5,7 @@
 using namespace std;
 
 static int n_states = 21;
-static int n_inputs = 8;
+static int n_measurements = 8;
 
 // all states and measurements in the NAV frame
 
@@ -45,8 +45,8 @@ LaminarModel::LaminarModel()
     /* underactuated tethered underwater drone
        lakes and rivers, assume no turbulence (predictable current or no current)
     */
-    n = n_states;
-    n_in = n_inputs;
+    n_s = n_states;
+    n_m = n_measurements;
 }
 
 
@@ -124,26 +124,37 @@ void LaminarModel::linearized_jacobian(double *x, double *dfdx)
     jacobian(t, x, dfdx, dfdt, &param);
 }
 
-void LaminarModel::map_inputs_states(double* x, double* f)
+void LaminarModel::estimate_measurements(double *x, double *zhat)
 {
-    /* map of states onto inputs
-    */
-    int i,j;
+    zhat[MI_OMEGA_X] = x[SI_OMEGA_X];
+    zhat[MI_OMEGA_Y] = x[SI_OMEGA_Y];
+    zhat[MI_OMEGA_Z] = x[SI_OMEGA_Z];
+    zhat[MI_A_X] = x[SI_A_X];
+    zhat[MI_A_Y] = x[SI_A_Y];
+    zhat[MI_A_Z] = x[SI_A_Z];
+    zhat[MI_X] = x[SI_X];
+    zhat[MI_Y] = x[SI_Y];
+}
 
-    for (i=0; i<n_inputs; i++)
+void LaminarModel::measurement_jacobian(double *x, double *dzhatdx)
+{
+    int i,j;
+    for (i=0; i<n_measurements; i++)
     {
         for (j=0; j<n_states; j++)
         {
-            f[i*n_states + j] = 0;
+            dzhatdx[i * n_states + j] = 0.0;
         }
     }
-    for (i=0; i<n_inputs; i++)
-    {
-        // TODO: placeholder linear mapping
-        f[i*n_states + i] = x[i];
-    }
+    dzhatdx[MI_OMEGA_X * n_states + SI_OMEGA_X] = 1.0;
+    dzhatdx[MI_OMEGA_Y * n_states + SI_OMEGA_Y] = 1.0;
+    dzhatdx[MI_OMEGA_Z * n_states + SI_OMEGA_Z] = 1.0;
+    dzhatdx[MI_A_X * n_states + SI_A_X] = 1.0;
+    dzhatdx[MI_A_Y * n_states + SI_A_Y] = 1.0;
+    dzhatdx[MI_A_Z * n_states + SI_A_Z] = 1.0;
+    dzhatdx[MI_X * n_states + SI_X] = 1.0;
+    dzhatdx[MI_Y * n_states + SI_Y] = 1.0;
 }
-
 
 void LaminarModel::initarrays()
 {
