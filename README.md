@@ -4,8 +4,8 @@ underactuated fish finder
 ![prototyping](1000007948.jpg)
 
 ## microcontroller board
-Arduino Due
-84MHz 32-bit ARM Cortex-M3 processor, 96KB SRAM
+Arduino Due, 84MHz 32-bit ARM Cortex-M3 processor, 96KB SRAM
+Adafruit METRO 328 for simple prototyping
 
 ## bill of materials
     1. SP17 IP68 10 pin waterproof connectors
