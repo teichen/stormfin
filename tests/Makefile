@@ -4,7 +4,7 @@ SHELL = /bin/sh
 # make sensors_test
 # make clean
 
-OBJS_SENSORS_TEST = sensors_test.o ../Controller.o ../Filter.o ../Utilities.o ../Sensors.o ../Thrusters.o ../LaminarModel.o ../Model.o ../RungeKutta.o ../Collocation.o
+OBJS_SENSORS_TEST = sensors_test.o ../Controller.o ../Filter.o ../Utilities.o ../Sensors.o ../Thrusters.o ../LaminarModel.o ../Model.o ../Collocation.o
 CFLAGS = -g -O0
 CC = clang++
 INCLUDES =

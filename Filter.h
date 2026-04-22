@@ -3,7 +3,6 @@
 #define _FILTER
 
 #include "Model.h"
-#include "RungeKutta.h"
 #include "Utilities.h"
 
 #include <iostream>
@@ -19,7 +18,6 @@ public:
     Filter();
     void init_model(Model&);
 
-    RungeKutta propagator;
     Utilities utilities;
 
     int n;
@@ -28,8 +26,6 @@ public:
     double* x_prior;
     double* sig_post;
     double* sig_prior;
-    double* jacobian;
-    double* laplacian;
 
     double t0;
 

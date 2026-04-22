@@ -47,6 +47,7 @@ void Utilities::matrix_mult(double* a, int n_a0, int n_a1, double* b, int n_b0, 
     gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, &a_matrix.matrix, &b_matrix.matrix, 0.0, &c_matrix.matrix);
 }
 
+
 Utilities::~Utilities()
 {
 }

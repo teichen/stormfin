@@ -10,12 +10,8 @@ Filter::Filter()
 
 void Filter::init_model(Model& model)
 {
-    n         = model.n_states;
-    n_in      = model.n_inputs;
-    jacobian  = model.linearized_jacobian;
-    laplacian = model.linearized_laplacian;
-
-    propagator.init_model(model);
+    n         = 9; // placeholder
+    n_in      = 15; // placeholder
 
     initarrays();
 
@@ -42,7 +38,7 @@ void Filter::propagate_update(double t, double* input_data)
     dt = t - t0;
 
     set_prior(x_post, sig_post);
-    propagator.propagate(t0, t, dt, x_prior);
+    // propagator.propagate(t0, t, dt, x_prior); // TODO
 
     set_posterior(x_prior, sig_prior);
     update(x_post, input_data);
@@ -57,6 +53,7 @@ void Filter::update(double* x, double* inputs)
     double noise[n_in * n_in];
     double residuals[n_in];
     double estimates[n_in];
+    double jacobian[n * n_in];
     double jacobian_T[n_in * n];
 
     int i,j;
@@ -122,7 +119,7 @@ void Filter::calc_estimates(double* x, double* estimates)
     {
         for (j=0; j<n; j++)
         {
-            estimates[i] = jacobian[i*n + j] * x[j];
+            estimates[i] = 0.0; // TODO: estimates[i] = jacobian[i*n + j] * x[j];
         }
     }
 }

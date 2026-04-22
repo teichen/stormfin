@@ -11,13 +11,12 @@ class Model
 public:
 
     Model();
-    
-    int n_states;
-    int n_inputs;
 
     double* linearized_rate;
     double* linearized_jacobian;
-    double* linearized_laplacian;
+
+    static int rate(double, const double[], double[], void*);
+    // TODO: jacobian    
 
     ~Model();
 

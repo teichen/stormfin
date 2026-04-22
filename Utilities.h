@@ -3,7 +3,6 @@
 #define _UTILITIES
 
 #include <gsl/gsl_blas.h>
-
 #include <iostream>
 
 using namespace std;
