@@ -20,9 +20,25 @@ Arduino Due
 ## software overview
 ```mermaid
 classDiagram
-    LaminarModel <|-- Model
+    Controller ..> Filter
+    Controller ..> Sensors
+    Controller ..> Thrusters
+    Controller ..> Collocation
     Filter ..> Utilities
-    Sensors : +void qrot_pure(q, a)
+    Filter ..> LaminarModel
+    Model <|-- LaminarModel
+    Filter : +void initialize_state()
+    Filter : +void propagate_update(double, double*)
+    Filter : +void calc_estimates(double*, double*)
+    Filter : +void set_prior(double*, double*)
+    Filter : +void set_posterior(double*, double*)
+    Filter : +void update(double*, double*)
+    Sensors : +void qrot_pure(double*, double*)
+    Sensors : +void body_to_nav(double*, double*, double*)
+    Sensors : +void set_qrot(double*)
+    Sensors : +void qrot_pure(double*, double*)
+    Thrusters : +void thrust_to_pwm(double*, double*)
+    Collocation : +void optimal_thrust(double*, double*, double*)
 ```
 
 ## test plan
