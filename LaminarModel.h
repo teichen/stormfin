@@ -19,6 +19,9 @@ public:
     static int rate(double, const double[], double[], void*);
     static int jacobian(double, const double[], double*, double[], void*);
 
+    void linearized_rate(double*, double*);
+    void linearized_jacobian(double*, double*);
+
     void map_inputs_states(double*, double*);
 
     void initarrays();

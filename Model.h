@@ -12,8 +12,8 @@ public:
 
     Model();
 
-    double* linearized_rate;
-    double* linearized_jacobian;
+    int n;
+    int n_in;
 
     static int rate(double, const double[], double[], void*);
     static int jacobian(double, const double[], double*, double[], void*);

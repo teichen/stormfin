@@ -45,41 +45,10 @@ LaminarModel::LaminarModel()
     /* underactuated tethered underwater drone
        lakes and rivers, assume no turbulence (predictable current or no current)
     */
-    mem_test = false;
-    initarrays();
-
-    int i,j;
-
-    // linearized rate of change of state
-    for (i=0; i<n_states; i++)
-    {
-        for (j=0; j<n_states; j++)
-        {
-            linearized_rate[i*n_states + j] = 0;
-        }
-    }
-
-    for (i=0; i<(int)(n_states/2); i++)
-    {
-        linearized_rate[2*i*n_states + 2*(i+1)] = 1;
-        linearized_rate[(2*i+1)*n_states + 2*i] = -1;
-    }
-
-    // linearized jacobian of input estimates
-    // TODO: generalize jacobian, using linearized placeholder
-    for (i=0; i<n_inputs; i++)
-    {
-        for (j=0; j<n_states; j++)
-        {
-            linearized_jacobian[i*n_states + j] = 0;
-        }
-    }
-    for (i=0; i<n_inputs; i++)
-    {
-        linearized_jacobian[i*n_states + i] = 1.0;
-    }
-
+    n = n_states;
+    n_in = n_inputs;
 }
+
 
 int LaminarModel::rate(double t, const double x[], double f[], void *params)
 {
@@ -136,6 +105,25 @@ int LaminarModel::jacobian(double t, const double x[], double *dfdx, double dfdt
     return GSL_SUCCESS;
 }
 
+void LaminarModel::linearized_rate(double *x, double *f)
+{
+    double t = 0.0;
+    int param = 0;
+    rate(t, x, f, &param);
+}
+
+void LaminarModel::linearized_jacobian(double *x, double *dfdx)
+{
+    double t = 0.0;
+    double dfdt[n_states];
+    int param = 0;
+    dfdt[SI_X] = x[SI_A_X]; // TODO: DRY
+    dfdt[SI_Y] = x[SI_A_Y];
+    dfdt[SI_Z] = x[SI_A_Z];
+
+    jacobian(t, x, dfdx, dfdt, &param);
+}
+
 void LaminarModel::map_inputs_states(double* x, double* f)
 {
     /* map of states onto inputs
@@ -159,18 +147,9 @@ void LaminarModel::map_inputs_states(double* x, double* f)
 
 void LaminarModel::initarrays()
 {
-    linearized_rate = (double*) calloc (n_states * n_states, sizeof(double));
-    linearized_jacobian = (double*) calloc (n_inputs * n_states, sizeof(double));
-
-    mem_test = true;
 }
 
 LaminarModel::~LaminarModel()
 {
-    if(mem_test==true)
-    {
-    delete [] linearized_rate;
-    delete [] linearized_jacobian;
-    }
 }
 

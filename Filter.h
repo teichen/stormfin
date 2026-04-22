@@ -26,6 +26,8 @@ public:
     double* x_prior;
     double* sig_post;
     double* sig_prior;
+    double* linearized_rate;
+    double* linearized_jacobian;
 
     double t0;
 

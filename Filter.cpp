@@ -10,8 +10,8 @@ Filter::Filter()
 
 void Filter::init_model(Model& model)
 {
-    n         = 9; // placeholder
-    n_in      = 15; // placeholder
+    n    = model.n;
+    n_in = model.n_in;
 
     initarrays();
 
@@ -181,6 +181,9 @@ void Filter::initarrays()
     sig_prior = (double*) calloc (n * n, sizeof(double));
     sig_post  = (double*) calloc (n * n, sizeof(double));
 
+    linearized_rate = (double*) calloc (n, sizeof(double));
+    linearized_jacobian = (double*) calloc (n * n, sizeof(double));
+
     mem_test  = true;
 }
 
@@ -192,5 +195,7 @@ Filter::~Filter()
     delete [] x_post;
     delete [] sig_prior;
     delete [] sig_post;
+    delete [] linearized_rate;
+    delete [] linearized_jacobian;
     }
 }
