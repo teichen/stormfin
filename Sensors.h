@@ -18,6 +18,7 @@ public:
     void body_to_nav(double*, double*, double*);
     void set_qrot(double*);
     void qrot_pure(double*, double*);
+    void ultrasonic_distance(double);
 
     ~Sensors();
 

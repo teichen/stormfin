@@ -46,6 +46,7 @@ void Sensors::set_qrot(double* q)
     m[8] = 1.0 - 2.0 * (q[1] * q[1]) - 2.0 * (q[2] * q[2]);
 }
 
+
 void Sensors::qrot_pure(double* q, double* a)
 {
     // pure quarternion rotation, a = q x a x q^-1
@@ -86,6 +87,13 @@ void Sensors::body_to_nav(double* q, double* r_body, double* r_nav)
             r_nav[i] += m[i*3 + j] * r_body[j];
         }
     }
+}
+
+void Sensors::ultrasonic_distance(double distance)
+{
+    /* scale the distance and use drift in orientation to predict center of mass
+    */
+    distance /= 10; // units of cm
 }
 
 void Sensors::initarrays()

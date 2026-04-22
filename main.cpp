@@ -27,8 +27,6 @@ SoftwareSerial ultrasonicSerial(2, 3); // IP68 UART ultrasonic
 unsigned char ultrasonic_data[4];
 */
 
-float distance;
-
 using namespace std;
 
 int main()
@@ -39,30 +37,11 @@ int main()
     Thrusters thrusters; // utility functions, e.g. effective thrust inputs
     Controller controller; // sensor fusion, estimation, navigation
 
-    /*
     // arduino setup()
-    Serial.begin(115200); // BNO055
-    ultrasonicSerial.begin(115200); // IP68 UART ultrasonic sensor
+    // Serial.begin(115200); // BNO055
     
-    // arduino loop()
-    // first, for the IP68 UART ultrasonic sensor
-    ultrasonicSerial.write(COM);
-    if (ultrasonicSerial.available() > 0) {
-        delay(4);
-        // Look for the start byte (typically 0xFF)
-        if (ultrasonicSerial.read() == 0xFF) {
-            ultrasonic_data[0] = 0xFF;
-            for (int i = 1; i < 4; i++) {
-                ultrasonic_data[i] = ultrasonicSerial.read();
-            }
-            // Checksum validation: (Data[0] + Data[1] + Data[2]) & 0x00FF
-            if (((ultrasonic_data[0] + ultrasonic_data[1] + ultrasonic_data[2]) & 0xFF) == ultrasonic_data[3]) {
-                distance = (ultrasonic_data[1] << 8) + ultrasonic_data[2]; // Combine High and Low bytes
-                distance /= 10; // units of cm
-            }
-        }
-    }
-    // next, the BNO055
+    /*
+    // first, the BNO055
     sensors_event_t orientationData , angVelocityData , linearAccelData, magnetometerData, accelerometerData, gravityData;
     bno.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
     bno.getEvent(&angVelocityData, Adafruit_BNO055::VECTOR_GYROSCOPE);
@@ -71,10 +50,6 @@ int main()
     bno.getEvent(&accelerometerData, Adafruit_BNO055::VECTOR_ACCELEROMETER);
     bno.getEvent(&gravityData, Adafruit_BNO055::VECTOR_GRAVITY);
 
-
-    */
-
-    /*
     sensors_event_t orientationData , angVelocityData , linearAccelData, magnetometerData, accelerometerData, gravityData;
     bno.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
     bno.getEvent(&angVelocityData, Adafruit_BNO055::VECTOR_GYROSCOPE);
@@ -123,6 +98,31 @@ int main()
         omega_nav[i] = omega_body[i];
     }
     sensors.qrot_pure(q, omega_nav);
+
+    /*
+    // next, the IP68 UART ultrasonic sensor
+    ultrasonicSerial.begin(115200); // IP68 UART ultrasonic sensor
+
+    // arduino loop()
+    // first, for the IP68 UART ultrasonic sensor
+    ultrasonicSerial.write(COM);
+    if (ultrasonicSerial.available() > 0) {
+        delay(4);
+        // Look for the start byte (typically 0xFF)
+        if (ultrasonicSerial.read() == 0xFF) {
+            ultrasonic_data[0] = 0xFF;
+            for (int i = 1; i < 4; i++) {
+                ultrasonic_data[i] = ultrasonicSerial.read();
+            }
+            // Checksum validation: (Data[0] + Data[1] + Data[2]) & 0x00FF
+            if (((ultrasonic_data[0] + ultrasonic_data[1] + ultrasonic_data[2]) & 0xFF) == ultrasonic_data[3]) {
+                distance = (ultrasonic_data[1] << 8) + ultrasonic_data[2]; // Combine High and Low bytes
+            }
+        }
+    }
+    */
+    double distance = 1.0; // [=] mm, placeholder
+    sensors.ultrasonic_distance(distance);
 
     /* while operational,
        (1) process sensor data
