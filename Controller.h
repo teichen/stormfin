@@ -2,7 +2,6 @@
 #ifndef _CONTROLLER
 #define _CONTROLLER
 
-#include "LaminarModel.h"
 #include "Filter.h"
 #include "Collocation.h"
 
@@ -17,10 +16,9 @@ public:
     Controller();
 
     Filter filter;
-    LaminarModel model;
     Collocation collocation;
 
-    void update_filter(double, double*);
+    void process(double, double*, double*, double*, double*);
 
     ~Controller();
 

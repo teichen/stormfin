@@ -2,7 +2,7 @@
 #ifndef _FILTER
 #define _FILTER
 
-#include "Model.h"
+#include "LaminarModel.h"
 #include "Utilities.h"
 
 #include <iostream>
@@ -16,27 +16,25 @@ public:
     bool mem_test;
 
     Filter();
-    void init_model(Model&);
 
     Utilities utilities;
+    LaminarModel model;
 
     int n_s;
     int n_m;
     double* x_post;
     double* x_prior;
-    double* sig_post;
-    double* sig_prior;
+    double* s2_post;
+    double* s2_prior;
     double* linearized_rate;
     double* linearized_jacobian;
-
-    double t0;
 
     void initialize_state();
     void initarrays();
 
-    void propagate_update(double, double*);
+    void process(double, double*, double*, double*, double*);
 
-    void calc_estimates(double*, double*);
+    void estimate_measurements(double*, double*);
 
     void set_prior(double*, double*);
     void set_posterior(double*, double*);

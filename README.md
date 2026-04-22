@@ -28,8 +28,8 @@ classDiagram
     Filter ..> LaminarModel
     Model <|-- LaminarModel
     Filter : +void initialize_state()
-    Filter : +void propagate_update(double, double*)
-    Filter : +void calc_estimates(double*, double*)
+    Filter : +void process(double, double*, double*, double*, double*)
+    Filter : +void estimate_measurements(double*, double*)
     Filter : +void set_prior(double*, double*)
     Filter : +void set_posterior(double*, double*)
     Filter : +void update(double*, double*)

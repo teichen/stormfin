@@ -6,21 +6,16 @@ using namespace std;
 Filter::Filter()
 {
     mem_test = false;
-}
 
-void Filter::init_model(Model& model)
-{
     n_s = model.n_s;
     n_m = model.n_m;
 
     initarrays();
 
     initialize_state();
-
-    t0 = 0.0;
 }
 
-void Filter::propagate_update(double t, double* input_data)
+void Filter::process(double dt, double* x_post, double* s2_post, double* thrust, double* measurements)
 {
     /* fusion of IMU+GPS+ultrasonic data
        propagate the prior estimate
@@ -34,25 +29,20 @@ void Filter::propagate_update(double t, double* input_data)
        0.01 <= epsilon <= 10 deg / hr
        ~1.e-6 (deg / s) ** 2 / Hz white noise
     */
-    double dt;
-    dt = t - t0;
+    set_prior(x_post, s2_post);
+    utilities.ode_iv(model, x_post, s2_post, n_s, dt);
 
-    set_prior(x_post, sig_post);
-    // propagator.propagate(t0, t, dt, x_prior); // TODO
-
-    set_posterior(x_prior, sig_prior);
-    update(x_post, input_data);
-
-    t0 = t;
+    set_posterior(x_prior, s2_prior);
+    update(x_post, measurements);
 }
 
-void Filter::update(double* x, double* inputs)
+void Filter::update(double* x, double* measurements)
 {
     double gain[n_m * n_s];
     double gain_T[n_m * n_s];
     double noise[n_m * n_m];
     double residuals[n_m];
-    double estimates[n_m];
+    double zhat[n_m];
     double jacobian[n_s * n_m];
     double jacobian_T[n_m * n_s];
 
@@ -65,39 +55,36 @@ void Filter::update(double* x, double* inputs)
 
     utilities.matrix_transpose(jacobian, n_s, n_m, jacobian_T);
 
-    calc_estimates(x, estimates);
+    estimate_measurements(x, zhat);
 
     double jac_sig[n_m * n_s];
     double jac_sig_T[n_m * n_s];
-    double sig_inputs[n_m * n_m];
+    double s2_meas[n_m * n_m];
 
-    utilities.matrix_mult(jacobian, n_m, n_s, sig_prior, n_s, n_s, jac_sig, n_m, n_s);
-
+    utilities.matrix_mult(jacobian, n_m, n_s, s2_prior, n_s, n_s, jac_sig, n_m, n_s);
     utilities.matrix_transpose(jac_sig, n_m, n_s, jac_sig_T);
 
-    utilities.matrix_mult(jac_sig, n_m, n_s, jacobian_T, n_s, n_m, sig_inputs, n_m, n_m);
+    utilities.matrix_mult(jac_sig, n_m, n_s, jacobian_T, n_s, n_m, s2_meas, n_m, n_m);
 
-    double inputs_noise[n_m * n_m];
+    double meas_noise[n_m * n_m];
 
     for (i=0; i<n_m; i++)
     {
         for (j=0; j<n_m; j++)
         {
-            inputs_noise[i * n_m + j] = sig_inputs[i * n_m + j] + noise[i * n_m + j];
+            meas_noise[i * n_m + j] = s2_meas[i * n_m + j] + noise[i * n_m + j];
         }
     }
 
-    double inputs_noise_inv[n_m * n_m];
+    double meas_noise_inv[n_m * n_m];
 
-    utilities.matrix_inv(inputs_noise, n_m, n_m, inputs_noise_inv);
-
-    utilities.matrix_mult(inputs_noise_inv, n_m, n_m, jac_sig, n_m, n_s, gain, n_m, n_s);
-
+    utilities.matrix_inv(meas_noise, n_m, n_m, meas_noise_inv);
+    utilities.matrix_mult(meas_noise_inv, n_m, n_m, jac_sig, n_m, n_s, gain, n_m, n_s);
     utilities.matrix_transpose(gain, n_m, n_s, gain_T);
 
     for (i=0; i<n_m; i++)
     {
-        residuals[i] = inputs[i] - estimates[i];
+        residuals[i] = measurements[i] - zhat[i];
     }
 
     double dx[n_s];
@@ -110,21 +97,12 @@ void Filter::update(double* x, double* inputs)
     }
 }
 
-void Filter::calc_estimates(double* x, double* estimates)
+void Filter::estimate_measurements(double* x, double* zhat)
 {
-    // linearized jacobian to back out linearized estimates
-    
-    int i,j;
-    for (i=0; i<n_m; i++)
-    {
-        for (j=0; j<n_s; j++)
-        {
-            estimates[i] = 0.0; // TODO: estimates[i] = jacobian[i*n + j] * x[j];
-        }
-    }
+    model.estimate_measurements(x, zhat);
 }
 
-void Filter::set_prior(double* x, double* sigma)
+void Filter::set_prior(double* x, double* s2)
 {
     int i,j;
     for (i=0; i<n_s; i++)
@@ -132,12 +110,12 @@ void Filter::set_prior(double* x, double* sigma)
         x_prior[i] = x[i];
         for (j=0; j<n_s; j++)
         {
-            sig_prior[i*n_s + j] = sigma[i*n_s + j];
+            s2_prior[i*n_s + j] = s2[i*n_s + j];
         }
     }
 }
 
-void Filter::set_posterior(double* x, double* sigma)
+void Filter::set_posterior(double* x, double* s2)
 {
     int i,j;
     for (i=0; i<n_s; i++)
@@ -145,7 +123,7 @@ void Filter::set_posterior(double* x, double* sigma)
         x_post[i] = x[i];
         for (j=0; j<n_s; j++)
         {
-            sig_post[i*n_s + j] = sigma[i*n_s + j];
+            s2_post[i*n_s + j] = s2[i*n_s + j];
         }
     }
 }
@@ -162,13 +140,13 @@ void Filter::initialize_state()
         {
             if (i == j)
             {
-                sig_prior[i*n_s + j] = 0.001;
-                sig_post[i*n_s + j]  = 0.001;
+                s2_prior[i*n_s + j] = 0.001;
+                s2_post[i*n_s + j]  = 0.001;
             }
             else
             {
-                sig_prior[i*n_s + j] = 0.0;
-                sig_post[i*n_s + j]  = 0.0;
+                s2_prior[i*n_s + j] = 0.0;
+                s2_post[i*n_s + j]  = 0.0;
             }
         }
     }
@@ -178,8 +156,8 @@ void Filter::initarrays()
 {
     x_prior   = (double*) calloc (n_s, sizeof(double));
     x_post    = (double*) calloc (n_s, sizeof(double));
-    sig_prior = (double*) calloc (n_s * n_s, sizeof(double));
-    sig_post  = (double*) calloc (n_s * n_s, sizeof(double));
+    s2_prior = (double*) calloc (n_s * n_s, sizeof(double));
+    s2_post  = (double*) calloc (n_s * n_s, sizeof(double));
 
     linearized_rate = (double*) calloc (n_s, sizeof(double));
     linearized_jacobian = (double*) calloc (n_s * n_s, sizeof(double));
@@ -193,8 +171,8 @@ Filter::~Filter()
     {
     delete [] x_prior;
     delete [] x_post;
-    delete [] sig_prior;
-    delete [] sig_post;
+    delete [] s2_prior;
+    delete [] s2_post;
     delete [] linearized_rate;
     delete [] linearized_jacobian;
     }

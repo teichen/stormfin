@@ -9,15 +9,15 @@ Controller::Controller()
 {
     /* controller to run Kalman filter
     */
-    filter.init_model(model);
-
 }
 
-void Controller::update_filter(double t, double* input_data)
+void Controller::process(double dt, double* x_post, double* s2_post, double* thrust, double* measurements)
 {
-    /* extended Kalman filter update
+    /* update best estimates forward in time with timestep dt
+       (a) if no measurements processed, propagate with updated thrust
+       (b) if measurements process, propagate and update with sensor data using extended Kalman filter
     */
-    filter.propagate_update(t, input_data);    
+    filter.process(dt, x_post, s2_post, thrust, measurements);    
 }
 
 Controller::~Controller()
