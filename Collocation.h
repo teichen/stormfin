@@ -10,7 +10,7 @@ public:
 
     Collocation();
 
-    void optimal_thrust(double*, double*, double*);
+    void optimal_thrust(double*, double*, int, double*);
 
     ~Collocation();
 
