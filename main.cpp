@@ -15,6 +15,7 @@ e.g.
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
+#include <Servo.h>
 
 //Set the delay between fresh samples
 uint16_t BNO055_SAMPLERATE_DELAY_MS = 100;
@@ -25,6 +26,9 @@ Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, &Wire);
 
 SoftwareSerial ultrasonicSerial(2, 3); // IP68 UART ultrasonic
 unsigned char ultrasonic_data[4];
+
+Servo ESC;
+
 */
 
 using namespace std;
@@ -123,6 +127,19 @@ int main()
     */
     double distance = 1.0; // [=] mm, placeholder
     sensors.ultrasonic_distance(distance);
+
+    /* now for the motor
+    int Speed;
+    ESC.attach(9, 1000, 2000); // ESC connected to PIN 9
+    */
+
+    int pwm = 0;
+    double u[2];
+    u[0] = 1.0; // placeholder
+    u[1] = 0.0; // placeholder
+    thrusters.thrust_to_pwm(u, pwm);
+    // ESC.writeMicroseconds(pwm);
+    // delay(100);
 
     /* while operational,
        (1) process sensor data

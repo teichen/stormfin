@@ -12,12 +12,13 @@ Thrusters::Thrusters()
     */
 }
 
-void Thrusters::thrust_to_pwm(double* u, double* pwm)
+void Thrusters::thrust_to_pwm(double* u, int& pwm)
 {
     /* provided a thrust, u [=] N, estimate a PWM (mapped) in microseconds
        u ~ c * PWM ** 2 where c is a coefficient of thrust
        pwm ~ 1500 microsec for warm up, 0 <= pwm <= 2000 microsec
     */
+    pwm = 100; // placeholder
 }
 
 Thrusters::~Thrusters()
