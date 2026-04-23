@@ -43,10 +43,14 @@ classDiagram
 
 ## test plan
     1. prototype
-    2. submersble (no power)
-    3. pool test
-    4. lake test (laminar no current)
-    5. river test (laminar current)
+    2. grid test xy filtered position and orientation
+    3. ultrasonic stop when target acquired
+    4. ultrasonic circling thrust default
+    5. ultrasonic stalk, throttle when target receeding
+    6. submersible (no power)
+    7. pool test
+    8. lake test (laminar no current)
+    9. river test (laminar current)
 
 ## TODO
     1. insufficient memory for iostream, stdlib explicitly included
