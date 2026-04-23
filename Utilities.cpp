@@ -1,10 +1,13 @@
 #include "Utilities.h"
 #include <stdlib.h>
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_matrix.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv2.h>
+#include <gsl/gsl_mode.h>
 
 using namespace std;
 
@@ -37,6 +40,16 @@ void Utilities::matrix_inv(double* a, int n_a0, int n_a1, double* a_inv)
     gsl_linalg_LU_invert(&a_matrix.matrix, p, &a_inv_matrix.matrix);
 
     gsl_permutation_free (p);
+}
+
+void Utilities::matrix_exponential(double* a, int n_a, double* a_exp)
+{
+    /* A_exp = expm(A)
+    */
+    gsl_matrix_view a_matrix = gsl_matrix_view_array(a, n_a, n_a);
+    gsl_matrix_view a_exp_matrix = gsl_matrix_view_array(a_exp, n_a, n_a);
+
+    gsl_linalg_exponential_ss(&a_matrix.matrix, &a_exp_matrix.matrix, GSL_PREC_DOUBLE);
 }
 
 void Utilities::matrix_mult(double* a, int n_a0, int n_a1, double* b, int n_b0, int n_b1, double* c, int n_c0, int n_c1)
@@ -110,6 +123,25 @@ void Utilities::set_elements(double* a, double* b, int n, int dim)
             for (j=0; j<n; j++)
             {
                 b[i*n + j] = a[i*n + j];
+            }
+        }
+    }
+}
+
+void Utilities::unity(int n, double* a)
+{
+    int i,j;
+    for (i=0; i<n; i++)
+    {
+        for (j=0; j<n; j++)
+        {
+            if (i == j)
+            {
+                a[i*n + j] = 1.0;
+            }
+            else
+            {
+                a[i*n + j] = 0.0;
             }
         }
     }

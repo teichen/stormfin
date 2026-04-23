@@ -9,7 +9,7 @@ SRC = main.cpp Controller.cpp Filter.cpp Utilities.cpp Sensors.cpp Thrusters.cpp
 CFLAGS = -g -O0
 CC = clang++
 INCLUDES = -I/usr/local/include
-LIBS = -L/usr/local/lib -L/usr/local/Cellar/gperftools/2.10/lib -lgsl -lgslcblas -lprofiler
+LIBS = -L/usr/local/lib -L/usr/local/Cellar/gperftools/2.10/lib -lgsl -lgslcblas -lm -lprofiler
 
 all:run
 

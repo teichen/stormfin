@@ -36,7 +36,7 @@ public:
 
     void estimate_measurements(double*, double*);
 
-    void update(double*, double*);
+    void update(double*, double*, double*);
 
     ~Filter();
 

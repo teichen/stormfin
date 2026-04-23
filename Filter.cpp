@@ -34,16 +34,62 @@ void Filter::process(double dt, double* x_post, double* s2_post, double* thrust,
     // propagate the mean state estimate
     utilities.ode_iv(model, x_post, x_prior, n_s, dt);
 
-    // TODO: propagate covariance
+    // propagate covariance as updated covariance of previous step with added process noise
+    double q[n_s * n_s];
+    utilities.set_elements(s2_prior, q, n_s, 2);
+    // TODO: consider q = 2 * s2 / tau; // approximation for continuous time white process noise
+    double g[n_s * n_s]; // stochastic mapping
+    double g_T[n_s * n_s];
+    utilities.unity(n_s, g);
+    utilities.matrix_transpose(g, n_s, n_s, g_T);
+
+    double jac_lin[n_s * n_m]; // linearized jacobian
+    model.linearized_jacobian(x_post, jac_lin); // propagate with the initial state (approx)
+    // TODO: consider using full propagation history
+
+    double phi[n_s * n_s]; // matrix exponential for the transition matrix
+    double phi_T[n_s * n_s];
+    double jac_dt[n_s * n_s];
+    int i,j;
+    for (i=0; i<n_s; i++)
+    {
+        for (j=0; j<n_s; j++)
+        {
+            jac_dt[i*n_s + j] = jac_lin[i*n_s + j] * dt;
+        }
+    }
+    utilities.matrix_exponential(jac_dt, n_s, phi); 
+    utilities.matrix_transpose(phi, n_s, n_s, phi_T);
+
+    double phi_g[n_s * n_s];
+    double phi_g_T[n_s * n_s];
+    utilities.matrix_mult(phi, n_s, n_s, g, n_s, n_s, phi_g, n_s, n_s);
+    utilities.matrix_transpose(phi_g, n_s, n_s, phi_g_T);
+    
+    double s2_prior_prev[n_s * n_s];
+    utilities.matrix_mult(s2_post, n_s, n_s, phi_T, n_s, n_s, s2_prior_prev, n_s, n_s);
+    utilities.matrix_mult(phi, n_s, n_s, s2_prior_prev, n_s, n_s, s2_prior, n_s, n_s);
+    double process_noise[n_s * n_s];
+    double phi_g_q[n_s * n_s];
+    utilities.matrix_mult(phi_g, n_s, n_s, q, n_s, n_s, phi_g_q, n_s, n_s);
+    utilities.matrix_mult(phi_g_q, n_s, n_s, phi_g_T, n_s, n_s, process_noise, n_s, n_s);
+
+    for (i=0; i<n_s; i++)
+    {
+        for (j=0; j<n_s; j++)
+        {
+            s2_prior[i*n_s + j] += process_noise[i*n_s + j] * dt;
+        }
+    }
 
     utilities.set_elements(x_prior, x_post, n_s, 1);
     utilities.set_elements(s2_prior, s2_post, n_s, 2);
 
     // update the posterior with sensor data
-    update(x_post, measurements);
+    update(x_post, s2_post, measurements);
 }
 
-void Filter::update(double* x, double* measurements)
+void Filter::update(double* x, double* s2, double* measurements)
 {
     double gain[n_m * n_s];
     double gain_T[n_m * n_s];
