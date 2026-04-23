@@ -1,7 +1,7 @@
 # stormfin
 underactuated fish finder
 
-![prototyping](1000007948.jpg)
+![prototyping](1000007958.jpg)
 
 ## microcontroller board
 Arduino Due, 84MHz 32-bit ARM Cortex-M3 processor, 96KB SRAM
