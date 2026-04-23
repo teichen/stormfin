@@ -16,6 +16,7 @@ Adafruit METRO 328 for simple prototyping
     6. Arduino Due
     7. 3S LiPo Battery (11.1V) with charger
     8. GLONASS + GPS PA1616D - 99 channel w/ 10Hz
+    9. ESC (20A) with BEC speed controller
 
 ## software overview
 ```mermaid
