@@ -5,6 +5,7 @@
 #include "Sensors.h"
 #include "Thrusters.h"
 #include <gperftools/profiler.h>
+#include <chrono>
 
 #define COM 0x55
 
@@ -38,8 +39,11 @@ static int STALK = 4;
 
 using namespace std;
 
+
 int main()
 {
+    using namespace std::chrono_literals;
+    auto dt1s = 1s;
     ProfilerStart("/tmp/prof.out"); // memory profiler
 
     Sensors sensors; // utility functions, e.g. ref frame rotations
@@ -47,6 +51,7 @@ int main()
     Controller controller; // sensor fusion, estimation, navigation
 
     int nav_state = DIVE;
+    auto t0 = std::chrono::system_clock::now();
 
     /*
     // arduino setup()
@@ -69,9 +74,11 @@ int main()
     double d0 = 0.0; // previous distance [=] cm, placeholder
     double d = 0.0; // current distance    
 
-    int pwm = 0;
-    double u[3]; // thrust
-
+    int pwm[3];
+    double u[3]; // thrust: L, R, Vertical
+    pwm[0] = 0.0;
+    pwm[1] = 0.0;
+    pwm[2] = 0.0;
     u[0] = 0.0;
     u[1] = 0.0;
     u[2] = 0.0;
@@ -151,6 +158,12 @@ int main()
         */
         sensors.ultrasonic_distance(d);
 
+        // use extended Kalman filter to get best estimate for d
+        // handle IMU, GPS, ultrasonic data as measurements with nonzero uncertainty
+
+        auto t = std::chrono::system_clock::now();
+        std::chrono::duration<double> dt = t - t0;
+
         if (d > 500){ // 600cm (20ft) operating limit
             // resume circling surveillance
             nav_state = SURVEILLANCE;
@@ -197,8 +210,8 @@ int main()
             u[2] = 0.0;
         }
         else if (nav_state == STALK) {
-            u[0] = 0.2;
-            u[1] = u[0]; // TODO: adjust based on d(d)/dt
+            u[0] = (d - d0) / (dt/dt1s) / 60 * 0.2; // account for drag, 1N ~ 60cm/s
+            u[1] = u[0];
             u[2] = 0.0;
         }
 
@@ -207,7 +220,7 @@ int main()
         // delay(100);
 
         d0 = d;
-
+        t0 = t;
         break; // for testing
     }
 

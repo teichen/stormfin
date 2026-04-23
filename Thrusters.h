@@ -10,7 +10,7 @@ public:
 
     Thrusters();
 
-    void thrust_to_pwm(double*, int&);
+    void thrust_to_pwm(double*, int*);
 
     ~Thrusters();
 
