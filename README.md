@@ -37,7 +37,7 @@ classDiagram
     Sensors : +void set_qrot(double*)
     Sensors : +void qrot_pure(double*, double*)
     Sensors : +void ultrasonic_distance(double)
-    Thrusters : +void thrust_to_pwm(double*, int&)
+    Thrusters : +void thrust_to_pwm(double*, double*)
     Collocation : +void optimal_thrust(double*, double*, int, double*)
 ```
 

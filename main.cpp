@@ -37,6 +37,10 @@ static int SURFACE = 2;
 static int SURVEILLANCE = 3;
 static int STALK = 4;
 
+static int n_states = 21; // TODO: DRY
+static int n_measurements = 8;
+static int n_thrusters = 3;
+
 using namespace std;
 
 
@@ -53,6 +57,19 @@ int main()
     int nav_state = DIVE;
     auto t0 = std::chrono::system_clock::now();
 
+    double x[n_states];
+    double s2[n_states];
+    double z[n_measurements];
+
+    int i,j;
+    for (i=0; i<n_states; i++)
+    {
+        x[i] = 0.0; // TODO: FIX: pull in from model
+        for (j=0; j<n_states; j++)
+        {
+            s2[i*n_states + j] = 0.0;
+        }
+    }
     /*
     // arduino setup()
     Serial.begin(115200); // BNO055
@@ -69,7 +86,6 @@ int main()
 
     double omega_body[4];
     double omega_nav[4];
-    int i;
 
     double d0 = 0.0; // previous distance [=] cm, placeholder
     double d = 0.0; // current distance    
@@ -160,9 +176,11 @@ int main()
 
         // use extended Kalman filter to get best estimate for d
         // handle IMU, GPS, ultrasonic data as measurements with nonzero uncertainty
-
         auto t = std::chrono::system_clock::now();
         std::chrono::duration<double> dt = t - t0;
+
+        // TODO: fill z with sensor data
+        controller.process(dt/dt1s, x, s2, u, z);
 
         if (d > 500){ // 600cm (20ft) operating limit
             // resume circling surveillance
