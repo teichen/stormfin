@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cmath>
+#include <cstdlib>
 #include "Controller.h"
 #include "Sensors.h"
 #include "Thrusters.h"
@@ -28,6 +30,11 @@ unsigned char ultrasonic_data[4];
 
 Servo ESC;
 */
+static int STOP = 0;
+static int DIVE = 1;
+static int SURFACE = 2;
+static int SURVEILLANCE = 3;
+static int STALK = 4;
 
 using namespace std;
 
@@ -38,6 +45,8 @@ int main()
     Sensors sensors; // utility functions, e.g. ref frame rotations
     Thrusters thrusters; // utility functions, e.g. effective thrust inputs
     Controller controller; // sensor fusion, estimation, navigation
+
+    int nav_state = STOP;
 
     /*
     // arduino setup()
@@ -57,8 +66,8 @@ int main()
     double omega_nav[4];
     int i;
 
-    double distance = 0.0; // [=] mm, placeholder
-    int Speed;
+    double d0 = 0.0; // previous distance [=] cm, placeholder
+    double d = 0.0; // current distance    
 
     int pwm = 0;
     double u[2];
@@ -69,6 +78,15 @@ int main()
     // arduino loop()
     while (true) {
         /*
+           (1) process sensor data
+           (2) determine operating state
+               (a) ROV manual
+               (b) circling surveilance
+               (c) target acquisition - stalking
+               (d) target acquisition - abandon to surface
+           (2) run estimation and navigation routines
+           (3) adjust thrust
+
         // first, the BNO055
         bno.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
         bno.getEvent(&angVelocityData, Adafruit_BNO055::VECTOR_GYROSCOPE);
@@ -125,27 +143,43 @@ int main()
                 }
                 // Checksum validation: (Data[0] + Data[1] + Data[2]) & 0x00FF
                 if (((ultrasonic_data[0] + ultrasonic_data[1] + ultrasonic_data[2]) & 0xFF) == ultrasonic_data[3]) {
-                    distance = (ultrasonic_data[1] << 8) + ultrasonic_data[2]; // Combine High and Low bytes
+                    d = (ultrasonic_data[1] << 8) + ultrasonic_data[2]; // [=]mm, Combine High and Low bytes
                 }
             }
         }
         */
-        sensors.ultrasonic_distance(distance);
+        sensors.ultrasonic_distance(d);
+
+        if (d > 500){ // 600cm (20ft) operating limit
+            // resume circling surveillance
+            nav_state = SURVEILLANCE;
+        }
+        else {
+            if (d < 30){
+                // abandon
+                nav_state = SURFACE;
+            }
+            else if (d > 200){
+                nav_state = STALK; // close the distance
+            }
+            else {
+                if (std::abs(d - d0) < 5){
+                    nav_state = STOP; // observe
+                }
+                else if (d > d0){
+                    nav_state = STALK;
+                }
+                else {
+                    nav_state = STOP;
+                }
+            }
+        }
 
         thrusters.thrust_to_pwm(u, pwm);
         // ESC.writeMicroseconds(pwm);
         // delay(100);
 
-        /* while operational,
-           (1) process sensor data
-           (2) determine operating state
-               (a) ROV manual
-               (b) circling surveilance
-               (c) target acquisition - stalking
-               (d) target acquisition - abandon to surface
-           (2) run estimation and navigation routines
-           (3) adjust thrust
-        */
+        d0 = d;
 
         break; // for testing
     }
