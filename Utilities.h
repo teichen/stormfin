@@ -18,6 +18,7 @@ public:
     void matrix_inv(double*, int, int, double*);
     void matrix_mult(double*, int, int, double*, int, int, double*, int, int);
     void ode_iv(Model&, double*, double*, int, double);
+    void set_elements(double*, double*, int, int);
 
     ~Utilities();
 

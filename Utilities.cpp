@@ -91,6 +91,29 @@ void Utilities::ode_iv(Model& model, double* x0, double* x, int n_x, double dt)
     gsl_odeiv2_step_free (s);
 }
 
+void Utilities::set_elements(double* a, double* b, int n, int dim)
+{
+    /* a -> b
+    */
+    int i,j;
+    if (dim == 1)
+    {
+        for (i=0; i<n; i++)
+        {
+            b[i] = a[i];
+        }
+    }
+    else
+    {
+        for (i=0; i<n; i++)
+        {
+            for (j=0; j<n; j++)
+            {
+                b[i*n + j] = a[i*n + j];
+            }
+        }
+    }
+}
 
 Utilities::~Utilities()
 {

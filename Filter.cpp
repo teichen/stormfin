@@ -29,10 +29,17 @@ void Filter::process(double dt, double* x_post, double* s2_post, double* thrust,
        0.01 <= epsilon <= 10 deg / hr
        ~1.e-6 (deg / s) ** 2 / Hz white noise
     */
-    set_prior(x_post, s2_post);
-    utilities.ode_iv(model, x_post, s2_post, n_s, dt);
+    utilities.set_elements(x_post, x_prior, n_s, 1);
+    utilities.set_elements(s2_post, s2_prior, n_s, 2);
+    // propagate the mean state estimate
+    utilities.ode_iv(model, x_post, x_prior, n_s, dt);
 
-    set_posterior(x_prior, s2_prior);
+    // TODO: propagate covariance
+
+    utilities.set_elements(x_prior, x_post, n_s, 1);
+    utilities.set_elements(s2_prior, s2_post, n_s, 2);
+
+    // update the posterior with sensor data
     update(x_post, measurements);
 }
 
@@ -50,7 +57,7 @@ void Filter::update(double* x, double* measurements)
 
     for (i=0; i<n_m; i++)
     {
-        noise[i * n_m + i] = 0.001;
+        noise[i * n_m + i] = 0.001; // TODO: model noise parameterization
     }
 
     utilities.matrix_transpose(jacobian, n_s, n_m, jacobian_T);
@@ -61,9 +68,9 @@ void Filter::update(double* x, double* measurements)
     double jac_sig_T[n_m * n_s];
     double s2_meas[n_m * n_m];
 
+    // project state covariance with measurement noise to calculate measurement covariance
     utilities.matrix_mult(jacobian, n_m, n_s, s2_prior, n_s, n_s, jac_sig, n_m, n_s);
     utilities.matrix_transpose(jac_sig, n_m, n_s, jac_sig_T);
-
     utilities.matrix_mult(jac_sig, n_m, n_s, jacobian_T, n_s, n_m, s2_meas, n_m, n_m);
 
     double meas_noise[n_m * n_m];
@@ -78,6 +85,7 @@ void Filter::update(double* x, double* measurements)
 
     double meas_noise_inv[n_m * n_m];
 
+    // calculate gain
     utilities.matrix_inv(meas_noise, n_m, n_m, meas_noise_inv);
     utilities.matrix_mult(meas_noise_inv, n_m, n_m, jac_sig, n_m, n_s, gain, n_m, n_s);
     utilities.matrix_transpose(gain, n_m, n_s, gain_T);
@@ -95,37 +103,12 @@ void Filter::update(double* x, double* measurements)
     {
         x_post[i] = x_prior[i] + dx[i];
     }
+    // TODO: update covariance
 }
 
 void Filter::estimate_measurements(double* x, double* zhat)
 {
     model.estimate_measurements(x, zhat);
-}
-
-void Filter::set_prior(double* x, double* s2)
-{
-    int i,j;
-    for (i=0; i<n_s; i++)
-    {
-        x_prior[i] = x[i];
-        for (j=0; j<n_s; j++)
-        {
-            s2_prior[i*n_s + j] = s2[i*n_s + j];
-        }
-    }
-}
-
-void Filter::set_posterior(double* x, double* s2)
-{
-    int i,j;
-    for (i=0; i<n_s; i++)
-    {
-        x_post[i] = x[i];
-        for (j=0; j<n_s; j++)
-        {
-            s2_post[i*n_s + j] = s2[i*n_s + j];
-        }
-    }
 }
 
 void Filter::initialize_state()
