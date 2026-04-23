@@ -22,7 +22,7 @@ void Utilities::matrix_transpose(double* a, int n_a0, int n_a1, double* a_transp
     {
         for (j=0; j<n_a1; j++)
         {
-            a_transpose[i * n_a1 + j] = a[j * n_a0 + i];
+            a_transpose[j * n_a0 + i] = a[i * n_a1 + j];
         }
     }
 }

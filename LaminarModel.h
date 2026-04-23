@@ -24,6 +24,7 @@ public:
 
     void estimate_measurements(double*, double*);
     void measurement_jacobian(double*, double*);
+    void linearized_measurement_jacobian(double*, double*);
 
     void initarrays();
 

@@ -31,7 +31,7 @@ classDiagram
     Filter : +void initialize_state()
     Filter : +void process(double, double*, double*, double*, double*)
     Filter : +void estimate_measurements(double*, double*)
-    Filter : +void update(double*, double*, double*)
+    Filter : +void update(double*)
     Sensors : +void qrot_pure(double*, double*)
     Sensors : +void body_to_nav(double*, double*, double*)
     Sensors : +void set_qrot(double*)

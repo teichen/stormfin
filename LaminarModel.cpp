@@ -156,6 +156,11 @@ void LaminarModel::measurement_jacobian(double *x, double *dzhatdx)
     dzhatdx[MI_Y * n_states + SI_Y] = 1.0;
 }
 
+void LaminarModel::linearized_measurement_jacobian(double *x, double *dzhatdx)
+{
+    measurement_jacobian(x, dzhatdx);
+}
+
 void LaminarModel::initarrays()
 {
 }
