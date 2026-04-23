@@ -46,7 +46,7 @@ int main()
     Thrusters thrusters; // utility functions, e.g. effective thrust inputs
     Controller controller; // sensor fusion, estimation, navigation
 
-    int nav_state = STOP;
+    int nav_state = DIVE;
 
     /*
     // arduino setup()
@@ -70,10 +70,11 @@ int main()
     double d = 0.0; // current distance    
 
     int pwm = 0;
-    double u[2];
+    double u[3]; // thrust
 
-    u[0] = 0.0; // placeholder
-    u[1] = 0.0; // placeholder
+    u[0] = 0.0;
+    u[1] = 0.0;
+    u[2] = 0.0;
 
     // arduino loop()
     while (true) {
@@ -173,6 +174,32 @@ int main()
                     nav_state = STOP;
                 }
             }
+        }
+
+        if (nav_state == DIVE){
+            u[0] = 0.0;
+            u[1] = 0.0;
+            u[2] = -1.0; // well below 15N capacity
+        }
+        else if (nav_state == SURFACE) {
+            u[0] = 0.0;
+            u[1] = 0.0;
+            u[2] = 1.0;
+        }
+        else if (nav_state == SURVEILLANCE) {
+            u[0] = 0.1;
+            u[1] = 2.0 * u[0]; // circle
+            u[2] = 0.0;
+        }
+        else if (nav_state == STOP) {
+            u[0] = 0.0;
+            u[1] = 0.0;
+            u[2] = 0.0;
+        }
+        else if (nav_state == STALK) {
+            u[0] = 0.2;
+            u[1] = u[0]; // TODO: adjust based on d(d)/dt
+            u[2] = 0.0;
         }
 
         thrusters.thrust_to_pwm(u, pwm);
