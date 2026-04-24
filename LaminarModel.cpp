@@ -126,12 +126,12 @@ void LaminarModel::linearized_jacobian(double *x, double *dfdx)
 
 void LaminarModel::estimate_measurements(double *x, double *zhat)
 {
-    zhat[MI_OMEGA_X] = x[SI_OMEGA_X];
-    zhat[MI_OMEGA_Y] = x[SI_OMEGA_Y];
-    zhat[MI_OMEGA_Z] = x[SI_OMEGA_Z];
-    zhat[MI_A_X] = x[SI_A_X];
-    zhat[MI_A_Y] = x[SI_A_Y];
-    zhat[MI_A_Z] = x[SI_A_Z];
+    zhat[MI_OMEGA_X] = x[SI_OMEGA_X] + x[SI_EPSILON_X];
+    zhat[MI_OMEGA_Y] = x[SI_OMEGA_Y] + x[SI_EPSILON_Y];
+    zhat[MI_OMEGA_Z] = x[SI_OMEGA_Z] + x[SI_EPSILON_Z];
+    zhat[MI_A_X] = x[SI_A_X] + x[SI_BETA_X];
+    zhat[MI_A_Y] = x[SI_A_Y] + x[SI_BETA_Y];
+    zhat[MI_A_Z] = x[SI_A_Z] + x[SI_BETA_Z];
     zhat[MI_X] = x[SI_X];
     zhat[MI_Y] = x[SI_Y];
 }
@@ -149,9 +149,15 @@ void LaminarModel::measurement_jacobian(double *x, double *dzhatdx)
     dzhatdx[MI_OMEGA_X * n_states + SI_OMEGA_X] = 1.0;
     dzhatdx[MI_OMEGA_Y * n_states + SI_OMEGA_Y] = 1.0;
     dzhatdx[MI_OMEGA_Z * n_states + SI_OMEGA_Z] = 1.0;
+    dzhatdx[MI_OMEGA_X * n_states + SI_EPSILON_X] = 1.0;
+    dzhatdx[MI_OMEGA_Y * n_states + SI_EPSILON_Y] = 1.0;
+    dzhatdx[MI_OMEGA_Z * n_states + SI_EPSILON_Z] = 1.0;
     dzhatdx[MI_A_X * n_states + SI_A_X] = 1.0;
     dzhatdx[MI_A_Y * n_states + SI_A_Y] = 1.0;
     dzhatdx[MI_A_Z * n_states + SI_A_Z] = 1.0;
+    dzhatdx[MI_A_X * n_states + SI_BETA_X] = 1.0;
+    dzhatdx[MI_A_Y * n_states + SI_BETA_Y] = 1.0;
+    dzhatdx[MI_A_Z * n_states + SI_BETA_Z] = 1.0;
     dzhatdx[MI_X * n_states + SI_X] = 1.0;
     dzhatdx[MI_Y * n_states + SI_Y] = 1.0;
 }
