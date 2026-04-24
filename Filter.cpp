@@ -32,7 +32,7 @@ void Filter::process(double dt, double* x_post, double* s2_post, double* thrust,
     utilities.set_elements(x_post, x_prior, n_s, 1);
     utilities.set_elements(s2_post, s2_prior, n_s, 2);
     // propagate the mean state estimate
-    utilities.ode_iv(model, x_post, x_prior, n_s, dt);
+    utilities.ode_iv(model, x_post, x_prior, n_s, dt, thrust);
 
     // propagate covariance as updated covariance of previous step with added process noise
     double q[n_s * n_s];

@@ -6,6 +6,7 @@ using namespace std;
 
 static int n_states = 21;
 static int n_measurements = 8;
+static int n_thrusters = 3;
 
 // all states and measurements in the NAV frame
 
@@ -40,6 +41,12 @@ static int MI_A_Z = 5;
 static int MI_X = 6; // GPS
 static int MI_Y = 7;
 
+static int UI_L = 0; // left thruster (forward/reverse)
+static int UI_R = 1; // right thruster (forward/reverse)
+static int UI_V = 2; // vertical thruster (dive/surface)
+
+static double thrust_utilization = 0.5; // forward thrust excluding rotation
+
 LaminarModel::LaminarModel()
 {
     /* underactuated tethered underwater drone
@@ -50,21 +57,23 @@ LaminarModel::LaminarModel()
 }
 
 
-int LaminarModel::rate(double t, const double x[], double f[], void *params)
+int LaminarModel::rate(double t, const double x[], double f[], void *u)
 {
     int i,j;
+
+    double *thrust = (double *)u;
 
     f[SI_THETA_X] = x[SI_OMEGA_X];
     f[SI_THETA_Y] = x[SI_OMEGA_Y];
     f[SI_THETA_Z] = x[SI_OMEGA_Z];
     f[SI_OMEGA_X] = 0.0;
     f[SI_OMEGA_Y] = 0.0;
-    f[SI_OMEGA_Z] = 0.0;
+    f[SI_OMEGA_Z] = (5.0 / 2.0) * (thrust[UI_R] - thrust[UI_L]); // net torque causing rotation, M=R=1?
     f[SI_X] = x[SI_V_X];
     f[SI_Y] = x[SI_V_Y];
     f[SI_Z] = x[SI_V_Z];
     f[SI_V_X] = x[SI_A_X];
-    f[SI_V_Y] = x[SI_A_Y];
+    f[SI_V_Y] = x[SI_A_Y] + thrust_utilization * (thrust[UI_R] + thrust[UI_L]);
     f[SI_V_Z] = x[SI_A_Z];
     f[SI_EPSILON_X] = 0.0;
     f[SI_EPSILON_Y] = 0.0;

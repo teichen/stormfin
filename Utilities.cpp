@@ -63,17 +63,16 @@ void Utilities::matrix_mult(double* a, int n_a0, int n_a1, double* b, int n_b0, 
     gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, &a_matrix.matrix, &b_matrix.matrix, 0.0, &c_matrix.matrix);
 }
 
-void Utilities::ode_iv(Model& model, double* x0, double* x, int n_x, double dt)
+void Utilities::ode_iv(Model& model, double* x0, double* x, int n_x, double dt, double* u)
 {
     /* RK4 integrate an ode rate function, f
     */
-    double param = 0.0; // placeholder, rates can take parameters
     size_t size_x = n_x;
 
     const gsl_odeiv2_step_type * T = gsl_odeiv2_step_rk4;
     gsl_odeiv2_step * s = gsl_odeiv2_step_alloc (T, n_x);
 
-    gsl_odeiv2_system sys = {model.rate, model.jacobian, size_x, &param};
+    gsl_odeiv2_system sys = {model.rate, model.jacobian, size_x, &u};
 
     double h = 0.01; // step size
     double x_err[n_x];

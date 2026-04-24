@@ -22,9 +22,9 @@ void Thrusters::thrust_to_pwm(double* u, int* pwm)
        u ~ c * PWM ** 2 where c is a coefficient of thrust
        pwm ~ 1500 microsec for warm up, 0 <= pwm <= 2000 microsec
 
-       u[0], pwm[0]: left thruster
-       u[1], pwm[1]: right thruster
-       u[2], pwm[2]: vertical thruster
+       u[0], pwm[0]: left thruster (forward/reverse)
+       u[1], pwm[1]: right thruster (forward/reverse)
+       u[2], pwm[2]: vertical thruster (dive/surface)
     */
     int i;
     for (i=0; i<3; i++)

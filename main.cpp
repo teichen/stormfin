@@ -103,7 +103,7 @@ int main()
     double d = 0.0; // current distance    
 
     int pwm[3];
-    double u[3]; // thrust: L, R, Vertical
+    double u[3]; // thrust: L forward/reverse, R forward/reverse, Vertical (dive/surface)
     pwm[0] = 0.0;
     pwm[1] = 0.0;
     pwm[2] = 0.0;
