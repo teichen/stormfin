@@ -41,8 +41,16 @@ static int n_states = 21; // TODO: DRY
 static int n_measurements = 8;
 static int n_thrusters = 3;
 
-using namespace std;
+static int MI_OMEGA_X = 0; // IMU gyro
+static int MI_OMEGA_Y = 1;
+static int MI_OMEGA_Z = 2;
+static int MI_A_X = 3; // IMU accel
+static int MI_A_Y = 4;
+static int MI_A_Z = 5;
+static int MI_X = 6; // GPS
+static int MI_Y = 7;
 
+using namespace std;
 
 int main()
 {
@@ -86,6 +94,10 @@ int main()
 
     double omega_body[4];
     double omega_nav[4];
+    double a_body[4];
+    double a_nav[4];
+
+    double latitude, longitude;
 
     double d0 = 0.0; // previous distance [=] cm, placeholder
     double d = 0.0; // current distance    
@@ -123,6 +135,7 @@ int main()
 
         imu::Quaternion quat = bno.getQuat();
         imu::Vector<3> gyro_data = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+        imu::Vector<3> accel_data = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
         */
         // TODO: swap in quat data
         q[0] = 0.0; // quat.w();
@@ -140,7 +153,7 @@ int main()
         /* body frame sufficient for stabilization, navigation frame needed for
            fusion with GPS and fault tolerance
         */
-        // TODO: swap in gyro_data
+        // TODO: swap in gyro_data, [=] radians / s
         omega_body[0] = 0.0;
         omega_body[1] = 1.0; // gyro_data[0];
         omega_body[2] = 0.0; // gyro_data[1];
@@ -150,6 +163,32 @@ int main()
             omega_nav[i] = omega_body[i];
         }
         sensors.qrot_pure(q, omega_nav);
+
+        // tether to GPS buoy should minimize tilt, use linear acceleration (no gravity)
+        // to avoid interpreting tilt as xy movement
+        // TODO: swap in accel_data, [=] m / s**2
+        a_body[0] = 0.0;
+        a_body[1] = 0.0; // accel_data[0]
+        a_body[2] = 0.5; // accel_data[1]
+        a_body[3] = 0.0; // accel_data[2]
+        for (i=0; i<4; i++)
+        {
+            a_nav[i] = a_body[i];
+        }
+        sensors.qrot_pure(q, a_nav);
+
+        // TODO: get GPS data
+        latitude = 0.0;
+        longitude = 0.0;
+
+        z[MI_OMEGA_X] = omega_nav[1];
+        z[MI_OMEGA_Y] = omega_nav[2];
+        z[MI_OMEGA_Z] = omega_nav[3];
+        z[MI_A_X] = a_nav[1];
+        z[MI_A_Y] = a_nav[2];
+        z[MI_A_Z] = a_nav[3];
+        z[MI_X] = longitude;
+        z[MI_Y] = latitude;
 
         /*
         // next, the IP68 UART ultrasonic sensor
