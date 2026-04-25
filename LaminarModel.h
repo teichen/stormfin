@@ -22,6 +22,10 @@ public:
     void linearized_rate(double*, double*);
     void linearized_jacobian(double*, double*);
 
+    void init_meas_noise(double*);
+    void init_state(double*);
+    void init_covariance(double*);
+
     void estimate_measurements(double*, double*);
     void measurement_jacobian(double*, double*);
     void linearized_measurement_jacobian(double*, double*);

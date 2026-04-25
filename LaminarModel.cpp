@@ -56,6 +56,51 @@ LaminarModel::LaminarModel()
     n_m = n_measurements;
 }
 
+void LaminarModel::init_meas_noise(double *meas_noise)
+{
+    /*
+       accelerometer bias, beta, propagates into velocity and position error
+       50 <= beta <= 1000 microg
+       ~2500 (microg) ** 2 / Hz white noise
+
+       gyro bias or drift rate, epsilon, integrates into attitude error
+       0.01 <= epsilon <= 10 deg / hr
+       ~1.e-6 (deg / s) ** 2 / Hz white noise
+    */
+    int i;
+    for (i=0; i<n_m; i++)
+    {
+        meas_noise[i * n_m + i] = 1.0e-6;
+    }
+}
+
+void LaminarModel::init_state(double *x)
+{
+    int i;
+    for (i=0; i<n_s; i++)
+    {
+        x[i] = 0.0;
+    }
+}
+
+void LaminarModel::init_covariance(double *s2)
+{
+    int i, j;
+    for (i=0; i<n_s; i++)
+    {
+        for (j=0; j<n_s; j++)
+        {
+            if (i == j)
+            {
+                s2[i*n_s + j] = 1.0e-6;
+            }
+            else
+            {
+                s2[i*n_s + j] = 0.0;
+            }
+        }
+    }
+}
 
 int LaminarModel::rate(double t, const double x[], double f[], void *u)
 {

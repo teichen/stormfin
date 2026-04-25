@@ -20,14 +20,6 @@ void Filter::process(double dt, double* x_post, double* s2_post, double* thrust,
     /* fusion of IMU+GPS+ultrasonic data
        propagate the prior estimate
        update the posterior estimate
-
-       accelerometer bias, beta, propagates into velocity and position error
-       50 <= beta <= 1000 microg
-       ~2500 (microg) ** 2 / Hz white noise
-
-       gyro bias or drift rate, epsilon, integrates into attitude error
-       0.01 <= epsilon <= 10 deg / hr
-       ~1.e-6 (deg / s) ** 2 / Hz white noise
     */
     utilities.set_elements(x_post, x_prior, n_s, 1);
     utilities.set_elements(s2_post, s2_prior, n_s, 2);
@@ -93,7 +85,7 @@ void Filter::update(double* measurements)
 {
     double gain[n_m * n_s];
     double gain_T[n_m * n_s];
-    double noise[n_m * n_m];
+    double meas_noise[n_m * n_m];
     double residuals[n_m];
     double zhat[n_m];
     double jac_meas[n_m * n_s]; // linearized jacobian
@@ -102,10 +94,7 @@ void Filter::update(double* measurements)
 
     int i,j;
 
-    for (i=0; i<n_m; i++)
-    {
-        noise[i * n_m + i] = 0.001; // TODO: model noise parameterization
-    }
+    model.init_meas_noise(meas_noise);
 
     utilities.matrix_transpose(jac_meas, n_m, n_s, jac_meas_T);
 
@@ -120,24 +109,24 @@ void Filter::update(double* measurements)
     utilities.matrix_transpose(jac_meas_sig, n_m, n_s, jac_meas_sig_T);
     utilities.matrix_mult(jac_meas_sig, n_m, n_s, jac_meas_T, n_s, n_m, s2_meas, n_m, n_m);
 
-    double meas_noise[n_m * n_m];
+    double meas_noise_tot[n_m * n_m];
 
     for (i=0; i<n_m; i++)
     {
         for (j=0; j<n_m; j++)
         {
-            meas_noise[i * n_m + j] = s2_meas[i * n_m + j] + noise[i * n_m + j];
+            meas_noise_tot[i * n_m + j] = s2_meas[i * n_m + j] + meas_noise[i * n_m + j];
         }
     }
 
-    double meas_noise_inv[n_m * n_m];
+    double meas_noise_tot_inv[n_m * n_m];
 
     // calculate gain
-    utilities.matrix_inv(meas_noise, n_m, n_m, meas_noise_inv);
+    utilities.matrix_inv(meas_noise_tot, n_m, n_m, meas_noise_tot_inv);
 
     double s2_prior_jac_meas_T[n_s * n_m];
     utilities.matrix_mult(s2_prior, n_s, n_s, jac_meas_T, n_s, n_m, s2_prior_jac_meas_T, n_s, n_m);
-    utilities.matrix_mult(s2_prior_jac_meas_T, n_s, n_m, meas_noise_inv, n_m, n_m, gain, n_s, n_m);
+    utilities.matrix_mult(s2_prior_jac_meas_T, n_s, n_m, meas_noise_tot_inv, n_m, n_m, gain, n_s, n_m);
     utilities.matrix_transpose(gain, n_s, n_m, gain_T);
 
     for (i=0; i<n_m; i++)
@@ -175,7 +164,7 @@ void Filter::update(double* measurements)
     utilities.matrix_mult(s2_tmp, n_s, n_s, eye_gain_jac_meas_T, n_s, n_s, s2_post_prev, n_s, n_s);
 
     double kr[n_s * n_m];
-    utilities.matrix_mult(gain, n_s, n_m, noise, n_m, n_m, kr, n_s, n_m);
+    utilities.matrix_mult(gain, n_s, n_m, meas_noise, n_m, n_m, kr, n_s, n_m);
     double proj_noise[n_s * n_s];
     utilities.matrix_mult(kr, n_s, n_m, gain_T, n_m, n_s, proj_noise, n_s, n_s);
     for (i=0; i<n_s; i++)
@@ -194,6 +183,9 @@ void Filter::estimate_measurements(double* x, double* zhat)
 
 void Filter::initialize_state()
 {
+    model.init_state(x_prior);
+    model.init_covariance(s2_prior);
+
     int i, j;
     
     for (i=0; i<n_s; i++)
