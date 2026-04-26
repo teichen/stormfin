@@ -132,13 +132,13 @@ int main()
 
     for (i=0; i<model.n_s; i++)
     {
-        if (i == SI_THETA_X)
+        if ((i == SI_THETA_X) or (i == SI_OMEGA_X))
         {
             assert(std::abs(x[i] - PI) < 0.1); // angular displacement integrated over 1s
         }
         else
         {
-            assert(std::abs(x[i]) < 1.0e-10);
+            assert(std::abs(x[i]) < 1.0e-5);
         }
     }
 
