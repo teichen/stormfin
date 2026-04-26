@@ -14,6 +14,7 @@ public:
 
     int n_s; // states
     int n_m; // measurements
+    int n_u; // inputs
 
     static int rate(double, const double[], double[], void*);
     static int jacobian(double, const double[], double*, double[], void*);

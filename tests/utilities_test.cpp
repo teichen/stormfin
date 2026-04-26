@@ -6,8 +6,33 @@ using std::endl;
 #include <math.h>
 #include <cmath>
 #include "../Utilities.h"
+#include "../LaminarModel.h"
 
 using namespace std;
+
+// TODO: DRY
+const double PI = 3.14159265358979323846;
+static int SI_THETA_X = 0; // angular displacement
+static int SI_THETA_Y = 1;
+static int SI_THETA_Z = 2;
+static int SI_OMEGA_X = 3; // angular velocity
+static int SI_OMEGA_Y = 4;
+static int SI_OMEGA_Z = 5;
+static int SI_X = 6; // linear displacement
+static int SI_Y = 7;
+static int SI_Z = 8;
+static int SI_V_X = 9; // linear velocity
+static int SI_V_Y = 10;
+static int SI_V_Z = 11;
+static int SI_A_X = 12; // linear acceleration
+static int SI_A_Y = 13;
+static int SI_A_Z = 14;
+static int SI_EPSILON_X = 15; // gyro drift
+static int SI_EPSILON_Y = 16;
+static int SI_EPSILON_Z = 17;
+static int SI_BETA_X = 18; // accel bias
+static int SI_BETA_Y = 19;
+static int SI_BETA_Z = 20;
 
 int main()
 {
@@ -59,6 +84,63 @@ int main()
     assert(b_exp[6] == 0.0);
     assert(b_exp[7] == 0.0);
     assert(b_exp[8] == 1.0);
+
+    // TEST-3 : simple matrix multiply
+    double c[4];
+    c[0] = 1.0;
+    c[1] = 2.0;
+    c[2] = 2.0;
+    c[3] = 3.0;
+    double d[4];
+    utilities.matrix_mult(a, 2, 2, c, 2, 2, d, 2 , 2);
+
+    assert(std::abs(d[0] - (double)(a[0] * c[0] + a[1] * c[2])) < 1.0e-10);
+    assert(std::abs(d[1] - (double)(a[0] * c[1] + a[1] * c[3])) < 1.0e-10);
+    assert(std::abs(d[2] - (double)(a[2] * c[0] + a[3] * c[2])) < 1.0e-10);
+    assert(std::abs(d[3] - (double)(a[2] * c[1] + a[3] * c[3])) < 1.0e-10);
+
+    // TEST-4 : ode_iv integrate model state dynamics
+    LaminarModel model;
+
+    double x0[model.n_s];
+    double x[model.n_s];
+    double u[model.n_u];
+    int i;
+    for (i=0; i<model.n_u; i++)
+    {
+        u[i] = 0.0;
+    }    
+
+    model.init_state(x0);
+    x0[SI_OMEGA_X] = PI; // [=] rad / s
+    utilities.set_elements(x0, x, model.n_s, 1);
+    double dt = 1.0; // [=] s
+
+    for (i=0; i<model.n_s; i++)
+    {
+        if (i == SI_OMEGA_X)
+        {
+            assert(x[i] == PI); // angular velocity
+        }
+        else
+        {
+            assert(x[i] == 0.0);
+        }
+    }
+
+    utilities.ode_iv(model, x0, x, model.n_s, dt, u);
+
+    for (i=0; i<model.n_s; i++)
+    {
+        if (i == SI_THETA_X)
+        {
+            assert(std::abs(x[i] - PI) < 1.0e-10); // angular displacement integrated over 1s
+        }
+        else
+        {
+            assert(x[i] == 0.0);
+        }
+    }
 
     return 0;
 }

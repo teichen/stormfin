@@ -54,6 +54,7 @@ LaminarModel::LaminarModel()
     */
     n_s = n_states;
     n_m = n_measurements;
+    n_u = n_thrusters;
 }
 
 void LaminarModel::init_meas_noise(double *meas_noise)
