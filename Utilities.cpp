@@ -36,8 +36,10 @@ void Utilities::matrix_inv(double* a, int n_a0, int n_a1, double* a_inv)
 
     int s;
     gsl_permutation * p = gsl_permutation_alloc (n_a0);
-    gsl_linalg_LU_decomp(&a_matrix.matrix, p, &s);
-    gsl_linalg_LU_invert(&a_matrix.matrix, p, &a_inv_matrix.matrix);
+    gsl_matrix *LU = gsl_matrix_alloc(n_a0, n_a1);
+    gsl_matrix_memcpy(LU, &a_matrix.matrix);
+    gsl_linalg_LU_decomp(LU, p, &s);
+    gsl_linalg_LU_invert(LU, p, &a_inv_matrix.matrix);
 
     gsl_permutation_free (p);
 }
