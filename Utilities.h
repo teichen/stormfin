@@ -4,7 +4,7 @@
 
 #include <gsl/gsl_blas.h>
 #include <iostream>
-#include "Model.h"
+#include "LaminarModel.h"
 
 using namespace std;
 
@@ -18,7 +18,7 @@ public:
     void matrix_exponential(double*, int, double*);
     void matrix_inv(double*, int, int, double*);
     void matrix_mult(double*, int, int, double*, int, int, double*, int, int);
-    void ode_iv(Model&, double*, double*, int, double, double*);
+    void ode_iv(LaminarModel&, double*, double*, int, double, double*);
     void set_elements(double*, double*, int, int);
     void unity(int, double*);
 

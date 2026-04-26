@@ -4,8 +4,8 @@ SHELL = /bin/sh
 # make all
 # make run
 
-OBJS = main.o Controller.o Filter.o Utilities.o Sensors.o Thrusters.o LaminarModel.o Model.o Collocation.o
-SRC = main.cpp Controller.cpp Filter.cpp Utilities.cpp Sensors.cpp Thrusters.cpp LaminarModel.cpp Model.cpp Collocation.cpp
+OBJS = main.o Controller.o Filter.o Utilities.o Sensors.o Thrusters.o LaminarModel.o Collocation.o
+SRC = main.cpp Controller.cpp Filter.cpp Utilities.cpp Sensors.cpp Thrusters.cpp LaminarModel.cpp Collocation.cpp
 CFLAGS = -g -O0
 CC = clang++
 INCLUDES = -I/usr/local/include

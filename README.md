@@ -27,7 +27,6 @@ classDiagram
     Controller ..> Collocation
     Filter ..> Utilities
     Filter ..> LaminarModel
-    Model <|-- LaminarModel
     Filter : +void initialize_state()
     Filter : +void process(double, double*, double*, double*, double*)
     Filter : +void estimate_measurements(double*, double*)

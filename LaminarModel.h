@@ -2,19 +2,18 @@
 #ifndef _LAMINARMODEL
 #define _LAMINARMODEL
 
-#include "Model.h"
-
 #include <iostream>
 
 using namespace std;
 
-class LaminarModel : public Model
+class LaminarModel
 {
 public:
 
     LaminarModel();
 
     bool mem_test;
+    int n_s, n_m, n_u;
 
     static int rate(double, const double[], double[], void*);
     static int jacobian(double, const double[], double*, double[], void*);

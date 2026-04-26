@@ -65,16 +65,21 @@ void Utilities::matrix_mult(double* a, int n_a0, int n_a1, double* b, int n_b0, 
     gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, &a_matrix.matrix, &b_matrix.matrix, 0.0, &c_matrix.matrix);
 }
 
-void Utilities::ode_iv(Model& model, double* x0, double* x, int n_x, double dt, double* u)
+void Utilities::ode_iv(LaminarModel& model, double* x0, double* x, int n_x, double dt, double* u)
 {
     /* RK4 integrate an ode rate function, f
     */
     size_t size_x = n_x;
 
-    const gsl_odeiv2_step_type * T = gsl_odeiv2_step_rk4;
-    gsl_odeiv2_step * s = gsl_odeiv2_step_alloc (T, n_x);
+    // simple RK4
+    //const gsl_odeiv2_step_type * T = gsl_odeiv2_step_rk4;
+    //gsl_odeiv2_step * s = gsl_odeiv2_step_alloc (T, n_x);
 
+    // RK8 with adaptive step size
     gsl_odeiv2_system sys = {model.rate, model.jacobian, size_x, &u};
+    gsl_odeiv2_control *c = gsl_odeiv2_control_y_new(1e-10, 1e-10);
+    gsl_odeiv2_evolve *e = gsl_odeiv2_evolve_alloc(n_x);
+    gsl_odeiv2_step *s = gsl_odeiv2_step_alloc(gsl_odeiv2_step_rk8pd, n_x);
 
     double h = 0.01; // step size
     double x_err[n_x];
@@ -87,21 +92,26 @@ void Utilities::ode_iv(Model& model, double* x0, double* x, int n_x, double dt, 
     int i, status;
     while (t < dt)
     {
-        status = gsl_odeiv2_step_apply (s, t, h, x, x_err, dxdt_in, dxdt_out, &sys);
+        // simple RK4
+        //status = gsl_odeiv2_step_apply (s, t, h, x, x_err, dxdt_in, dxdt_out, &sys);
+        // RK8 with adaptive step size
+        status = gsl_odeiv2_evolve_apply (e, c, s, &sys, &t, dt, &h, x);
 
         if (status != GSL_SUCCESS) {
             fprintf(stderr, "Error in evolution\n");
             break;
         }
 
-        // update
-        for (i=0; i<n_x; i++)
-        {
-            dxdt_in[i] = dxdt_out[i];
-        }
-        t += h;
+        // update (for RK4)
+        //for (i=0; i<n_x; i++)
+        //{
+        //    dxdt_in[i] = dxdt_out[i];
+        //}
+        //t += h;
     }
 
+    gsl_odeiv2_evolve_free(e);
+    gsl_odeiv2_control_free(c);
     gsl_odeiv2_step_free (s);
 }
 
