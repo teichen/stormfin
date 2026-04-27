@@ -72,12 +72,11 @@ int main()
     {
         if ((i == SI_THETA_X) or (i == SI_OMEGA_X))
         {
-            cout << x[i] << endl;
-            assert(std::abs(x[i] - PI) < 0.1); // angular displacement integrated over 1s
+            assert(std::abs(filter.x_post[i] - PI) < 0.1); // angular displacement integrated over 1s
         }
         else
         {
-            assert(std::abs(x[i]) < 1.0e-5);
+            assert(std::abs(filter.x_post[i]) < 1.0e-5);
         }
     }
 
