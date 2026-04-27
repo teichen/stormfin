@@ -11,13 +11,17 @@ Controller::Controller()
     */
 }
 
-void Controller::process(double dt, double* x_post, double* s2_post, double* thrust, double* measurements)
+void Controller::process(double dt, double* x, double* s2, double* thrust, double* measurements)
 {
     /* update best estimates forward in time with timestep dt
        (a) if no measurements processed, propagate with updated thrust
        (b) if measurements process, propagate and update with sensor data using extended Kalman filter
     */
-    filter.process(dt, x_post, s2_post, thrust, measurements);    
+    filter.process(dt, x, s2, thrust, measurements);    
+
+    // update input mean state and covariance with the posterior estimates in the filter
+    utilities.set_elements(filter.x_post, x, filter.n_s, 1);
+    utilities.set_elements(filter.s2_post, s2, filter.n_s, 2);
 }
 
 Controller::~Controller()

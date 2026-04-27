@@ -1,5 +1,6 @@
 #include "Filter.h"
 #include <stdlib.h>
+#include <cmath>
 
 using namespace std;
 
@@ -15,20 +16,23 @@ Filter::Filter()
     initialize_state();
 }
 
-void Filter::process(double dt, double* x_post, double* s2_post, double* thrust, double* measurements)
+void Filter::process(double dt, double* x, double* s2, double* thrust, double* measurements)
 {
     /* fusion of IMU+GPS+ultrasonic data
        propagate the prior estimate
        update the posterior estimate
     */
-    utilities.set_elements(x_post, x_prior, n_s, 1);
-    utilities.set_elements(s2_post, s2_prior, n_s, 2);
-    // propagate the mean state estimate
-    utilities.ode_iv(model, x_post, x_prior, n_s, dt, thrust);
+    // update the priors in case the propagation fails
+    utilities.set_elements(x, x_prior, n_s, 1);
+    utilities.set_elements(s2, s2_prior, n_s, 2);
 
-    // propagate covariance as updated covariance of previous step with added process noise
+    // 1. (a) propagate the mean state estimate, propagate x -> new x_prior
+    utilities.ode_iv(model, x, x_prior, n_s, dt, thrust);
+
+    // 1. (b) propagate covariance as updated covariance of previous step with added process noise
+    // s2 -> new s2_prior
     double q[n_s * n_s];
-    utilities.set_elements(s2_prior, q, n_s, 2);
+    utilities.set_elements(s2, q, n_s, 2);
     // TODO: consider q = 2 * s2 / tau; // approximation for continuous time white process noise
     double g[n_s * n_s]; // stochastic mapping
     double g_T[n_s * n_s];
@@ -36,7 +40,7 @@ void Filter::process(double dt, double* x_post, double* s2_post, double* thrust,
     utilities.matrix_transpose(g, n_s, n_s, g_T);
 
     double jac_lin[n_s * n_m]; // linearized jacobian
-    model.linearized_jacobian(x_post, jac_lin); // propagate with the initial state (approx)
+    model.linearized_jacobian(x, jac_lin); // propagate with the initial state (approx)
     // TODO: consider using full propagation history
 
     double phi[n_s * n_s]; // matrix exponential for the transition matrix
@@ -59,7 +63,7 @@ void Filter::process(double dt, double* x_post, double* s2_post, double* thrust,
     utilities.matrix_transpose(phi_g, n_s, n_s, phi_g_T);
     
     double s2_prior_prev[n_s * n_s];
-    utilities.matrix_mult(s2_post, n_s, n_s, phi_T, n_s, n_s, s2_prior_prev, n_s, n_s);
+    utilities.matrix_mult(s2, n_s, n_s, phi_T, n_s, n_s, s2_prior_prev, n_s, n_s);
     utilities.matrix_mult(phi, n_s, n_s, s2_prior_prev, n_s, n_s, s2_prior, n_s, n_s);
     double process_noise[n_s * n_s];
     double phi_g_q[n_s * n_s];
@@ -74,11 +78,24 @@ void Filter::process(double dt, double* x_post, double* s2_post, double* thrust,
         }
     }
 
+    // overwrite the posteriors in case the update fails
     utilities.set_elements(x_prior, x_post, n_s, 1);
     utilities.set_elements(s2_prior, s2_post, n_s, 2);
 
-    // update the posterior with sensor data
-    update(measurements);
+    // 2. update the posterior with sensor data
+    // x2_prior -> x2_post, s2_prior -> s2_post
+    int n_nonnan_z = 0;
+    for (i=0; i<n_m; i++)
+    {
+        if (!std::isnan(measurements[i]))
+        {
+            n_nonnan_z += 1;
+        }
+    }
+    if (n_nonnan_z > 0)
+    {
+        update(measurements);
+    }
 }
 
 void Filter::update(double* measurements)

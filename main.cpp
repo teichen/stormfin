@@ -66,7 +66,7 @@ int main()
     auto t0 = std::chrono::system_clock::now();
 
     double x[n_states];
-    double s2[n_states];
+    double s2[n_states * n_states];
     double z[n_measurements];
 
     int i,j;

@@ -25,6 +25,7 @@ classDiagram
     Controller ..> Sensors
     Controller ..> Thrusters
     Controller ..> Collocation
+    Controller ..> Utilities
     Filter ..> Utilities
     Filter ..> LaminarModel
     Filter : +void initialize_state()
