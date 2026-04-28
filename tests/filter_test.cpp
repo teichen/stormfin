@@ -33,6 +33,15 @@ static int SI_BETA_X = 18; // accel bias
 static int SI_BETA_Y = 19;
 static int SI_BETA_Z = 20;
 
+static int MI_OMEGA_X = 0; // IMU gyro
+static int MI_OMEGA_Y = 1;
+static int MI_OMEGA_Z = 2;
+static int MI_A_X = 3; // IMU accel
+static int MI_A_Y = 4;
+static int MI_A_Z = 5;
+static int MI_X = 6; // GPS
+static int MI_Y = 7;
+
 int main()
 {
     Filter filter;
@@ -72,6 +81,28 @@ int main()
     {
         if ((i == SI_THETA_X) or (i == SI_OMEGA_X))
         {
+            assert(std::abs(filter.x_post[i] - PI) < 0.1); // angular displacement integrated over 1s
+        }
+        else
+        {
+            assert(std::abs(filter.x_post[i]) < 1.0e-5);
+        }
+    }
+
+    // TEST-1 : pass in omega_y as a measurement
+    z[MI_OMEGA_Y] = PI;
+
+    filter.process(dt, x, s2, u, z);
+
+    for (i=0; i<model.n_s; i++)
+    {
+        if ((i == SI_THETA_X) or (i == SI_OMEGA_X))
+        {
+            assert(std::abs(filter.x_post[i] - PI) < 0.1); // angular displacement integrated over 1s
+        }
+        else if ((i == SI_THETA_Y) or (i == SI_OMEGA_Y)) // response to gyro measurement
+        {
+            cout << i << " " << filter.x_post[i] << endl;
             assert(std::abs(filter.x_post[i] - PI) < 0.1); // angular displacement integrated over 1s
         }
         else

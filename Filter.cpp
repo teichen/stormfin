@@ -100,6 +100,9 @@ void Filter::process(double dt, double* x, double* s2, double* thrust, double* m
 
 void Filter::update(double* measurements)
 {
+    // TODO: truncate gain, noise, residuals, zhat, jac_meas into space of nonnan measurements
+
+
     double gain[n_m * n_s];
     double gain_T[n_m * n_s];
     double meas_noise[n_m * n_m];
