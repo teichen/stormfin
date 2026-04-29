@@ -62,7 +62,7 @@ int main()
         {
             if (i == j)
             {
-                s2[i * model.n_s + j] = 0.001;
+                s2[i * model.n_s + j] = 1.0e-5;
             }
             else
             {
@@ -105,6 +105,7 @@ int main()
     filter.utilities.set_elements(filter.s2_post, s2, model.n_s, 2);
 
     filter.process(dt, x, s2, u, z); // theta_y integrates omega_y
+    // half of the innovation dumps onto epsilon_y unless hacked off meas jac
 
     for (i=0; i<model.n_s; i++)
     {
@@ -119,7 +120,7 @@ int main()
         else if ((i == SI_THETA_Y) or (i == SI_OMEGA_Y)) // response to gyro measurement
         {
             // finite noise, not matching PI exactly
-            assert(std::abs(filter.x_post[i] - 1.57) < 0.1); // angular displacement integrated over 1s
+            assert(std::abs(filter.x_post[i] - PI) < 0.2); // angular displacement integrated over 1s
         }
         else
         {

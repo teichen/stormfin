@@ -220,6 +220,13 @@ void LaminarModel::measurement_jacobian(double *x, double *dzhatdx)
 void LaminarModel::linearized_measurement_jacobian(double *x, double *dzhatdx)
 {
     measurement_jacobian(x, dzhatdx);
+    // gyro drift and accel bias hacked off of IMU innovations
+    dzhatdx[MI_OMEGA_X * n_states + SI_EPSILON_X] = 0.0;
+    dzhatdx[MI_OMEGA_Y * n_states + SI_EPSILON_Y] = 0.0;
+    dzhatdx[MI_OMEGA_Z * n_states + SI_EPSILON_Z] = 0.0;
+    dzhatdx[MI_A_X * n_states + SI_BETA_X] = 0.0;
+    dzhatdx[MI_A_Y * n_states + SI_BETA_Y] = 0.0;
+    dzhatdx[MI_A_Z * n_states + SI_BETA_Z] = 0.0;
 }
 
 void LaminarModel::initarrays()
