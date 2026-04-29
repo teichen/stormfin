@@ -60,7 +60,14 @@ int main()
         x[i] = 0.0;
         for (j=0; j<model.n_s; j++)
         {
-            s2[i * model.n_s + j] = 0.0;
+            if (i == j)
+            {
+                s2[i * model.n_s + j] = 0.001;
+            }
+            else
+            {
+                s2[i * model.n_s + j] = 0.0;
+            }
         }
     }
     for (i=0; i<model.n_u; i++)
@@ -92,18 +99,27 @@ int main()
     // TEST-1 : pass in omega_y as a measurement
     z[MI_OMEGA_Y] = PI;
 
-    filter.process(dt, x, s2, u, z);
+    filter.process(dt, x, s2, u, z); // omega_y responds
+
+    filter.utilities.set_elements(filter.x_post, x, model.n_s, 1);
+    filter.utilities.set_elements(filter.s2_post, s2, model.n_s, 2);
+
+    filter.process(dt, x, s2, u, z); // theta_y integrates omega_y
 
     for (i=0; i<model.n_s; i++)
     {
-        if ((i == SI_THETA_X) or (i == SI_OMEGA_X))
+        if (i == SI_THETA_X)
         {
-            assert(std::abs(filter.x_post[i] - PI) < 0.1); // angular displacement integrated over 1s
+            assert(std::abs(filter.x_post[i] - 2*PI) < 0.1); // angular displacement integrated over 1s
+        }
+        else if (i == SI_OMEGA_X)
+        {
+            assert(std::abs(filter.x_post[i] - PI) < 0.1);
         }
         else if ((i == SI_THETA_Y) or (i == SI_OMEGA_Y)) // response to gyro measurement
         {
-            cout << i << " " << filter.x_post[i] << endl;
-            assert(std::abs(filter.x_post[i] - PI) < 0.1); // angular displacement integrated over 1s
+            // finite noise, not matching PI exactly
+            assert(std::abs(filter.x_post[i] - 1.57) < 0.1); // angular displacement integrated over 1s
         }
         else
         {

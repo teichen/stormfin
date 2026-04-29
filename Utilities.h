@@ -14,6 +14,7 @@ public:
 
     Utilities();
 
+    void print_mat(double*, int, int);
     void get_rows(double*, int, int, int*, int, double*);
     void get_cols(double*, int, int, int*, int, double*);
     void get_rows_cols(double*, int, int, int*, int, double*);

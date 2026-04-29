@@ -15,6 +15,22 @@ Utilities::Utilities()
 {
 }
 
+void Utilities::print_mat(double* a, int n_a0, int n_a1)
+{
+    std::string row;
+    int i,j;
+    for (i=0; i<n_a0; i++)
+    {
+        row = "";
+        for (j=0; j<n_a1; j++)
+        {
+            row += std::to_string(a[i*n_a1 + j]);
+            row += " ";
+        }
+        cout << row << endl;
+    }
+}
+
 void Utilities::get_cols(double* a, int n_a0, int n_a1, int* idx, int n_idx, double* a_trunc)
 {
     int i,j;
@@ -46,7 +62,7 @@ void Utilities::get_rows_cols(double* a, int n_a0, int n_a1, int* idx, int n_idx
     {
         for (j=0; j<n_idx; j++)
         {
-            a_trunc[i*n_idx + j] = a[idx[i] * n_idx + idx[j]];
+            a_trunc[i*n_idx + j] = a[idx[i] * n_a1 + idx[j]];
         }
     }
 }

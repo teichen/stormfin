@@ -153,8 +153,9 @@ void Filter::update(double* measurements)
     
     // inner product should involve only measurement space for data we have at this time
     // truncate gain, noise, residuals, zhat, jac_meas into space of nonnan measurements
-    // FULL: utilities.matrix_mult(s2_prior_jac_meas_T, n_s, n_m, meas_noise_tot_inv, n_m, n_m, gain, n_s, n_m);
-    // FULL: utilities.matrix_transpose(gain, n_s, n_m, gain_T);
+    utilities.matrix_mult(s2_prior_jac_meas_T, n_s, n_m, meas_noise_tot_inv, n_m, n_m, gain, n_s, n_m);
+    utilities.matrix_transpose(gain, n_s, n_m, gain_T);
+
     double s2_prior_jac_meas_T_trunc[n_s * n_nonnan_z];
     double meas_noise_tot_inv_trunc[n_nonnan_z * n_nonnan_z];
     double gain_trunc[n_s * n_nonnan_z];
@@ -179,7 +180,7 @@ void Filter::update(double* measurements)
     double dx[n_s];
 
     // FULL: utilities.matrix_mult(gain, n_s, n_m, residuals, n_m, 1, dx, n_s, 1);
-    utilities.matrix_mult(gain_trunc, n_s, n_nonnan_z, residuals, n_nonnan_z, 1, dx, n_s, 1);
+    utilities.matrix_mult(gain_trunc, n_s, n_nonnan_z, residuals_trunc, n_nonnan_z, 1, dx, n_s, 1);
 
     for (i=0; i<n_s; i++)
     {
