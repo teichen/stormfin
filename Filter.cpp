@@ -84,11 +84,13 @@ void Filter::process(double dt, double* x, double* s2, double* thrust, double* m
 
     // 2. update the posterior with sensor data
     // x2_prior -> x2_post, s2_prior -> s2_post
-    int n_nonnan_z = 0;
+    j = 0;
+    n_nonnan_z = 0;
     for (i=0; i<n_m; i++)
     {
         if (!std::isnan(measurements[i]))
         {
+            nonnan_z_idx[j] = i;
             n_nonnan_z += 1;
         }
     }
@@ -96,13 +98,15 @@ void Filter::process(double dt, double* x, double* s2, double* thrust, double* m
     {
         update(measurements);
     }
+    // housekeeping (unnecessary)
+    for (i=j+1; i<n_m; i++)
+    {
+        nonnan_z_idx[i] = -1; // default
+    }
 }
 
 void Filter::update(double* measurements)
 {
-    // TODO: truncate gain, noise, residuals, zhat, jac_meas into space of nonnan measurements
-
-
     double gain[n_m * n_s];
     double gain_T[n_m * n_s];
     double meas_noise[n_m * n_m];
@@ -146,17 +150,36 @@ void Filter::update(double* measurements)
 
     double s2_prior_jac_meas_T[n_s * n_m];
     utilities.matrix_mult(s2_prior, n_s, n_s, jac_meas_T, n_s, n_m, s2_prior_jac_meas_T, n_s, n_m);
-    utilities.matrix_mult(s2_prior_jac_meas_T, n_s, n_m, meas_noise_tot_inv, n_m, n_m, gain, n_s, n_m);
-    utilities.matrix_transpose(gain, n_s, n_m, gain_T);
+    
+    // inner product should involve only measurement space for data we have at this time
+    // truncate gain, noise, residuals, zhat, jac_meas into space of nonnan measurements
+    // FULL: utilities.matrix_mult(s2_prior_jac_meas_T, n_s, n_m, meas_noise_tot_inv, n_m, n_m, gain, n_s, n_m);
+    // FULL: utilities.matrix_transpose(gain, n_s, n_m, gain_T);
+    double s2_prior_jac_meas_T_trunc[n_s * n_nonnan_z];
+    double meas_noise_tot_inv_trunc[n_nonnan_z * n_nonnan_z];
+    double gain_trunc[n_s * n_nonnan_z];
+    double gain_T_trunc[n_nonnan_z * n_s];
+    utilities.get_cols(s2_prior_jac_meas_T, n_s, n_m, nonnan_z_idx, n_nonnan_z, s2_prior_jac_meas_T_trunc);
+    utilities.get_rows_cols(meas_noise_tot_inv, n_m, n_m, nonnan_z_idx, n_nonnan_z, meas_noise_tot_inv_trunc);
+    utilities.matrix_mult(s2_prior_jac_meas_T_trunc, n_s, n_nonnan_z, meas_noise_tot_inv_trunc, n_nonnan_z, n_nonnan_z, gain_trunc, n_s, n_nonnan_z);
+    utilities.matrix_transpose(gain_trunc, n_s, n_nonnan_z, gain_T_trunc);
 
+    double residuals_trunc[n_nonnan_z];
+    j = 0;
     for (i=0; i<n_m; i++)
     {
         residuals[i] = measurements[i] - zhat[i];
+        if (!std::isnan(measurements[i]))
+        {
+            residuals_trunc[j] = residuals[i];
+            j++;
+        }
     }
 
     double dx[n_s];
 
-    utilities.matrix_mult(gain, n_s, n_m, residuals, n_m, 1, dx, n_s, 1);
+    // FULL: utilities.matrix_mult(gain, n_s, n_m, residuals, n_m, 1, dx, n_s, 1);
+    utilities.matrix_mult(gain_trunc, n_s, n_nonnan_z, residuals, n_nonnan_z, 1, dx, n_s, 1);
 
     for (i=0; i<n_s; i++)
     {
@@ -167,7 +190,12 @@ void Filter::update(double* measurements)
     double eye[n_s * n_s];
     utilities.unity(n_s, eye);
     double gain_jac_meas[n_s * n_s];
-    utilities.matrix_mult(gain, n_s, n_m, jac_meas, n_m, n_s, gain_jac_meas, n_s, n_s);
+
+    // FULL: utilities.matrix_mult(gain, n_s, n_m, jac_meas, n_m, n_s, gain_jac_meas, n_s, n_s);
+    double jac_meas_trunc[n_nonnan_z * n_s];
+    utilities.get_rows(jac_meas, n_m, n_s, nonnan_z_idx, n_nonnan_z, jac_meas_trunc);
+    utilities.matrix_mult(gain_trunc, n_s, n_nonnan_z, jac_meas_trunc, n_nonnan_z, n_s, gain_jac_meas, n_s, n_s);
+
     double eye_gain_jac_meas[n_s * n_s];
     for (i=0; i<n_s; i++)
     {
@@ -184,9 +212,15 @@ void Filter::update(double* measurements)
     utilities.matrix_mult(s2_tmp, n_s, n_s, eye_gain_jac_meas_T, n_s, n_s, s2_post_prev, n_s, n_s);
 
     double kr[n_s * n_m];
-    utilities.matrix_mult(gain, n_s, n_m, meas_noise, n_m, n_m, kr, n_s, n_m);
+    // FULL: utilities.matrix_mult(gain, n_s, n_m, meas_noise, n_m, n_m, kr, n_s, n_m);
+    double meas_noise_trunc[n_nonnan_z * n_nonnan_z];
+    double kr_trunc[n_s * n_nonnan_z];
+    utilities.get_rows_cols(meas_noise, n_m, n_m, nonnan_z_idx, n_nonnan_z, meas_noise_trunc);
+    utilities.matrix_mult(gain_trunc, n_s, n_nonnan_z, meas_noise_trunc, n_nonnan_z, n_nonnan_z, kr_trunc, n_s, n_nonnan_z);
+
     double proj_noise[n_s * n_s];
-    utilities.matrix_mult(kr, n_s, n_m, gain_T, n_m, n_s, proj_noise, n_s, n_s);
+    // FULL: utilities.matrix_mult(kr, n_s, n_m, gain_T, n_m, n_s, proj_noise, n_s, n_s);
+    utilities.matrix_mult(kr_trunc, n_s, n_nonnan_z, gain_T_trunc, n_nonnan_z, n_s, proj_noise, n_s, n_s);
     for (i=0; i<n_s; i++)
     {
         for (j=0; j<n_s; j++)
@@ -234,7 +268,7 @@ void Filter::initarrays()
     x_post    = (double*) calloc (n_s, sizeof(double));
     s2_prior = (double*) calloc (n_s * n_s, sizeof(double));
     s2_post  = (double*) calloc (n_s * n_s, sizeof(double));
-
+    nonnan_z_idx = (int*) calloc (n_m, sizeof(int));
     linearized_rate = (double*) calloc (n_s, sizeof(double));
     linearized_jacobian = (double*) calloc (n_s * n_s, sizeof(double));
 
@@ -249,6 +283,7 @@ Filter::~Filter()
     delete [] x_post;
     delete [] s2_prior;
     delete [] s2_post;
+    delete [] nonnan_z_idx;
     delete [] linearized_rate;
     delete [] linearized_jacobian;
     }

@@ -29,6 +29,9 @@ public:
     double* linearized_rate;
     double* linearized_jacobian;
 
+    int n_nonnan_z;
+    int* nonnan_z_idx;
+
     void initialize_state();
     void initarrays();
 

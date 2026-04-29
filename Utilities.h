@@ -14,6 +14,9 @@ public:
 
     Utilities();
 
+    void get_rows(double*, int, int, int*, int, double*);
+    void get_cols(double*, int, int, int*, int, double*);
+    void get_rows_cols(double*, int, int, int*, int, double*);
     void matrix_transpose(double*, int, int, double*);
     void matrix_exponential(double*, int, double*);
     void matrix_inv(double*, int, int, double*);

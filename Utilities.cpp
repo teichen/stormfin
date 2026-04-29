@@ -15,6 +15,42 @@ Utilities::Utilities()
 {
 }
 
+void Utilities::get_cols(double* a, int n_a0, int n_a1, int* idx, int n_idx, double* a_trunc)
+{
+    int i,j;
+    for (i=0; i<n_a0; i++)
+    {
+        for (j=0; j<n_idx; j++)
+        {
+            a_trunc[i * n_idx + j] = a[i * n_a1 + idx[j]];
+        }
+    }
+}
+
+void Utilities::get_rows(double* a, int n_a0, int n_a1, int* idx, int n_idx, double* a_trunc)
+{
+    int i,j;
+    for (i=0; i<n_idx; i++)
+    {
+        for (j=0; j<n_a1; j++)
+        {
+            a_trunc[i * n_a1 + j] = a[idx[i] * n_a1 + j];
+        }
+    }
+}
+
+void Utilities::get_rows_cols(double* a, int n_a0, int n_a1, int* idx, int n_idx, double* a_trunc)
+{
+    int i,j;
+    for (i=0; i<n_idx; i++)
+    {
+        for (j=0; j<n_idx; j++)
+        {
+            a_trunc[i*n_idx + j] = a[idx[i] * n_idx + idx[j]];
+        }
+    }
+}
+
 void Utilities::matrix_transpose(double* a, int n_a0, int n_a1, double* a_transpose)
 {
     int i,j;
