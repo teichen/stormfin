@@ -3,7 +3,8 @@
 #define _CONTROLLER
 
 #include "Utilities.h"
-#include "Filter.h"
+#include "KalmanFilter.h"
+#include "ComplementaryFilter.h"
 #include "Collocation.h"
 
 #include <iostream>
@@ -17,7 +18,8 @@ public:
     Controller();
 
     Utilities utilities;
-    Filter filter;
+    KalmanFilter ekf;
+    ComplementaryFilter cf;
     Collocation collocation;
 
     void process(double, double*, double*, double*, double*);

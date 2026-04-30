@@ -1,10 +1,10 @@
-#include "Filter.h"
+#include "KalmanFilter.h"
 #include <stdlib.h>
 #include <cmath>
 
 using namespace std;
 
-Filter::Filter()
+KalmanFilter::KalmanFilter()
 {
     mem_test = false;
 
@@ -16,7 +16,7 @@ Filter::Filter()
     initialize_state();
 }
 
-void Filter::process(double dt, double* x, double* s2, double* thrust, double* measurements)
+void KalmanFilter::process(double dt, double* x, double* s2, double* thrust, double* measurements)
 {
     /* fusion of IMU+GPS+ultrasonic data
        propagate the prior estimate
@@ -105,7 +105,7 @@ void Filter::process(double dt, double* x, double* s2, double* thrust, double* m
     }
 }
 
-void Filter::update(double* measurements)
+void KalmanFilter::update(double* measurements)
 {
     double gain[n_m * n_s];
     double gain_T[n_m * n_s];
@@ -231,12 +231,12 @@ void Filter::update(double* measurements)
     }
 }
 
-void Filter::estimate_measurements(double* x, double* zhat)
+void KalmanFilter::estimate_measurements(double* x, double* zhat)
 {
     model.estimate_measurements(x, zhat);
 }
 
-void Filter::initialize_state()
+void KalmanFilter::initialize_state()
 {
     model.init_state(x_prior);
     model.init_covariance(s2_prior);
@@ -263,7 +263,7 @@ void Filter::initialize_state()
     }
 }
 
-void Filter::initarrays()
+void KalmanFilter::initarrays()
 {
     x_prior   = (double*) calloc (n_s, sizeof(double));
     x_post    = (double*) calloc (n_s, sizeof(double));
@@ -276,7 +276,7 @@ void Filter::initarrays()
     mem_test  = true;
 }
 
-Filter::~Filter()
+KalmanFilter::~KalmanFilter()
 {
     if(mem_test==true)
     {

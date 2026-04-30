@@ -5,6 +5,8 @@
 
 using namespace std;
 
+static string filter_type = "on-board"; // on-board: ComplementaryFilter, off-board: KalmanFilter
+
 Controller::Controller()
 {
     /* controller to run Kalman filter
@@ -17,11 +19,22 @@ void Controller::process(double dt, double* x, double* s2, double* thrust, doubl
        (a) if no measurements processed, propagate with updated thrust
        (b) if measurements process, propagate and update with sensor data using extended Kalman filter
     */
-    filter.process(dt, x, s2, thrust, measurements);    
+    if (filter_type == "on-board")
+    {
+        cf.process(dt, x, s2, thrust, measurements);
 
-    // update input mean state and covariance with the posterior estimates in the filter
-    utilities.set_elements(filter.x_post, x, filter.n_s, 1);
-    utilities.set_elements(filter.s2_post, s2, filter.n_s, 2);
+        // update input mean state and covariance with the posterior estimates in the filter
+        utilities.set_elements(cf.x_post, x, cf.n_s, 1);
+        utilities.set_elements(cf.s2_post, s2, cf.n_s, 2);
+    }
+    else if (filter_type == "off-board")
+    {
+        ekf.process(dt, x, s2, thrust, measurements);    
+
+        // update input mean state and covariance with the posterior estimates in the filter
+        utilities.set_elements(ekf.x_post, x, ekf.n_s, 1);
+        utilities.set_elements(ekf.s2_post, s2, ekf.n_s, 2);
+    }
 }
 
 Controller::~Controller()

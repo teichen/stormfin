@@ -1,6 +1,6 @@
-// Filter.h
-#ifndef _FILTER
-#define _FILTER
+// ComplementaryFilter.h
+#ifndef _COMPLEMENTARYFILTER
+#define _COMPLEMENTARYFILTER
 
 #include "LaminarModel.h"
 #include "Utilities.h"
@@ -9,13 +9,13 @@
 
 using namespace std;
 
-class Filter
+class ComplementaryFilter
 {
 public:
 
     bool mem_test;
 
-    Filter();
+    ComplementaryFilter();
 
     Utilities utilities;
     LaminarModel model;
@@ -41,7 +41,7 @@ public:
 
     void update(double*);
 
-    ~Filter();
+    ~ComplementaryFilter();
 
 private:
 };

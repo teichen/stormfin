@@ -5,7 +5,8 @@ using std::cout;
 using std::endl;
 #include <math.h>
 #include <cmath>
-#include "../Filter.h"
+#include "../KalmanFilter.h"
+#include "../ComplementaryFilter.h"
 
 using namespace std;
 
@@ -44,7 +45,7 @@ static int MI_Y = 7;
 
 int main()
 {
-    Filter filter;
+    KalmanFilter filter;
 
     // TEST-0 : propagate model state and covariance
     LaminarModel model;
