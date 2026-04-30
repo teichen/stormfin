@@ -4,9 +4,9 @@ underactuated fish finder
 ![prototyping](1000007958.jpg)
 
 ## microcontroller board
-Adafruit METRO 328 / Arduino Nano Complementary Filtering on-board
-Embedded EKF would require STM32H7 (for example), CMSIS-DSP library, etc.
-Arduino Due (84MHz 32-bit ARM Cortex-M3 processor, 96KB SRAM) would struggle with EKF
+Adafruit METRO 328 / Arduino Nano Complementary Filtering on-board \
+Embedded EKF would require STM32H7 (for example), CMSIS-DSP library, etc. \
+Arduino Due (84MHz 32-bit ARM Cortex-M3 processor, 96KB SRAM) would struggle with EKF \
 
 ## bill of materials
     1. SP17 IP68 10 pin waterproof connectors
