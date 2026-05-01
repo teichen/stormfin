@@ -6,6 +6,7 @@ using std::endl;
 #include <math.h>
 #include <cmath>
 #include "../Utilities.h"
+#include "../GSLWrappers.h"
 #include "../LaminarModel.h"
 
 using namespace std;
@@ -37,6 +38,7 @@ static int SI_BETA_Z = 20;
 int main()
 {
     Utilities utilities;
+    GSLWrappers gsl;
 
     // TEST-0 : simple matrix transpose
     double a[4];
@@ -53,7 +55,7 @@ int main()
 
     // TEST-1 : simple matrix inversion
     double a_inv[4];
-    utilities.matrix_inv(a, 2, 2, a_inv);
+    gsl.matrix_inv(a, 2, 2, a_inv);
     double a_det = a[0] * a[3] - a[1] * a[2];
     
     assert(std::abs(a_inv[0] - (double)(a[3] / a_det)) < 1.0e-10);
@@ -73,7 +75,7 @@ int main()
     b[7] = 0.0;
     b[8] = 0.0;
     double b_exp[9];
-    utilities.matrix_exponential(b, 3, b_exp);
+    gsl.matrix_exponential(b, 3, b_exp);
 
     assert(b_exp[0] == 1.0);
     assert(std::abs(b_exp[1] - b[1]) < 1.0e-10);
@@ -92,7 +94,7 @@ int main()
     c[2] = 2.0;
     c[3] = 3.0;
     double d[4];
-    utilities.matrix_mult(a, 2, 2, c, 2, 2, d, 2 , 2);
+    gsl.matrix_mult(a, 2, 2, c, 2, 2, d, 2 , 2);
 
     assert(std::abs(d[0] - (double)(a[0] * c[0] + a[1] * c[2])) < 1.0e-10);
     assert(std::abs(d[1] - (double)(a[0] * c[1] + a[1] * c[3])) < 1.0e-10);
@@ -128,7 +130,7 @@ int main()
         }
     }
 
-    utilities.ode_iv(model, x0, x, model.n_s, dt, u);
+    gsl.ode_iv(model, x0, x, model.n_s, dt, u);
 
     for (i=0; i<model.n_s; i++)
     {

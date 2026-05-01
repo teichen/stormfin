@@ -4,6 +4,7 @@
 
 #include "LaminarModel.h"
 #include "Utilities.h"
+#include "GSLWrappers.h" // TODO: remove
 
 #include <iostream>
 
@@ -18,6 +19,7 @@ public:
     ComplementaryFilter();
 
     Utilities utilities;
+    GSLWrappers gsl; // TODO: remove
     LaminarModel model;
 
     int n_s;

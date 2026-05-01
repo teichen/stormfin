@@ -4,6 +4,7 @@
 
 #include "LaminarModel.h"
 #include "Utilities.h"
+#include "GSLWrappers.h"
 
 #include <iostream>
 
@@ -18,6 +19,7 @@ public:
     KalmanFilter();
 
     Utilities utilities;
+    GSLWrappers gsl;
     LaminarModel model;
 
     int n_s;

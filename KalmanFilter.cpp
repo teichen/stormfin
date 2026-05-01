@@ -27,7 +27,7 @@ void KalmanFilter::process(double dt, double* x, double* s2, double* thrust, dou
     utilities.set_elements(s2, s2_prior, n_s, 2);
 
     // 1. (a) propagate the mean state estimate, propagate x -> new x_prior
-    utilities.ode_iv(model, x, x_prior, n_s, dt, thrust);
+    gsl.ode_iv(model, x, x_prior, n_s, dt, thrust);
 
     // 1. (b) propagate covariance as updated covariance of previous step with added process noise
     // s2 -> new s2_prior
@@ -54,21 +54,21 @@ void KalmanFilter::process(double dt, double* x, double* s2, double* thrust, dou
             jac_dt[i*n_s + j] = jac_lin[i*n_s + j] * dt;
         }
     }
-    utilities.matrix_exponential(jac_dt, n_s, phi); 
+    gsl.matrix_exponential(jac_dt, n_s, phi); 
     utilities.matrix_transpose(phi, n_s, n_s, phi_T);
 
     double phi_g[n_s * n_s];
     double phi_g_T[n_s * n_s];
-    utilities.matrix_mult(phi, n_s, n_s, g, n_s, n_s, phi_g, n_s, n_s);
+    gsl.matrix_mult(phi, n_s, n_s, g, n_s, n_s, phi_g, n_s, n_s);
     utilities.matrix_transpose(phi_g, n_s, n_s, phi_g_T);
     
     double s2_prior_prev[n_s * n_s];
-    utilities.matrix_mult(s2, n_s, n_s, phi_T, n_s, n_s, s2_prior_prev, n_s, n_s);
-    utilities.matrix_mult(phi, n_s, n_s, s2_prior_prev, n_s, n_s, s2_prior, n_s, n_s);
+    gsl.matrix_mult(s2, n_s, n_s, phi_T, n_s, n_s, s2_prior_prev, n_s, n_s);
+    gsl.matrix_mult(phi, n_s, n_s, s2_prior_prev, n_s, n_s, s2_prior, n_s, n_s);
     double process_noise[n_s * n_s];
     double phi_g_q[n_s * n_s];
-    utilities.matrix_mult(phi_g, n_s, n_s, q, n_s, n_s, phi_g_q, n_s, n_s);
-    utilities.matrix_mult(phi_g_q, n_s, n_s, phi_g_T, n_s, n_s, process_noise, n_s, n_s);
+    gsl.matrix_mult(phi_g, n_s, n_s, q, n_s, n_s, phi_g_q, n_s, n_s);
+    gsl.matrix_mult(phi_g_q, n_s, n_s, phi_g_T, n_s, n_s, process_noise, n_s, n_s);
 
     for (i=0; i<n_s; i++)
     {
@@ -129,9 +129,9 @@ void KalmanFilter::update(double* measurements)
     double s2_meas[n_m * n_m];
 
     // project state covariance with measurement noise to calculate measurement covariance
-    utilities.matrix_mult(jac_meas, n_m, n_s, s2_prior, n_s, n_s, jac_meas_sig, n_m, n_s);
+    gsl.matrix_mult(jac_meas, n_m, n_s, s2_prior, n_s, n_s, jac_meas_sig, n_m, n_s);
     utilities.matrix_transpose(jac_meas_sig, n_m, n_s, jac_meas_sig_T);
-    utilities.matrix_mult(jac_meas_sig, n_m, n_s, jac_meas_T, n_s, n_m, s2_meas, n_m, n_m);
+    gsl.matrix_mult(jac_meas_sig, n_m, n_s, jac_meas_T, n_s, n_m, s2_meas, n_m, n_m);
 
     double meas_noise_tot[n_m * n_m];
 
@@ -146,14 +146,14 @@ void KalmanFilter::update(double* measurements)
     double meas_noise_tot_inv[n_m * n_m];
 
     // calculate gain
-    utilities.matrix_inv(meas_noise_tot, n_m, n_m, meas_noise_tot_inv);
+    gsl.matrix_inv(meas_noise_tot, n_m, n_m, meas_noise_tot_inv);
 
     double s2_prior_jac_meas_T[n_s * n_m];
-    utilities.matrix_mult(s2_prior, n_s, n_s, jac_meas_T, n_s, n_m, s2_prior_jac_meas_T, n_s, n_m);
+    gsl.matrix_mult(s2_prior, n_s, n_s, jac_meas_T, n_s, n_m, s2_prior_jac_meas_T, n_s, n_m);
     
     // inner product should involve only measurement space for data we have at this time
     // truncate gain, noise, residuals, zhat, jac_meas into space of nonnan measurements
-    utilities.matrix_mult(s2_prior_jac_meas_T, n_s, n_m, meas_noise_tot_inv, n_m, n_m, gain, n_s, n_m);
+    gsl.matrix_mult(s2_prior_jac_meas_T, n_s, n_m, meas_noise_tot_inv, n_m, n_m, gain, n_s, n_m);
     utilities.matrix_transpose(gain, n_s, n_m, gain_T);
 
     double s2_prior_jac_meas_T_trunc[n_s * n_nonnan_z];
@@ -162,7 +162,7 @@ void KalmanFilter::update(double* measurements)
     double gain_T_trunc[n_nonnan_z * n_s];
     utilities.get_cols(s2_prior_jac_meas_T, n_s, n_m, nonnan_z_idx, n_nonnan_z, s2_prior_jac_meas_T_trunc);
     utilities.get_rows_cols(meas_noise_tot_inv, n_m, n_m, nonnan_z_idx, n_nonnan_z, meas_noise_tot_inv_trunc);
-    utilities.matrix_mult(s2_prior_jac_meas_T_trunc, n_s, n_nonnan_z, meas_noise_tot_inv_trunc, n_nonnan_z, n_nonnan_z, gain_trunc, n_s, n_nonnan_z);
+    gsl.matrix_mult(s2_prior_jac_meas_T_trunc, n_s, n_nonnan_z, meas_noise_tot_inv_trunc, n_nonnan_z, n_nonnan_z, gain_trunc, n_s, n_nonnan_z);
     utilities.matrix_transpose(gain_trunc, n_s, n_nonnan_z, gain_T_trunc);
 
     double residuals_trunc[n_nonnan_z];
@@ -179,8 +179,8 @@ void KalmanFilter::update(double* measurements)
 
     double dx[n_s];
 
-    // FULL: utilities.matrix_mult(gain, n_s, n_m, residuals, n_m, 1, dx, n_s, 1);
-    utilities.matrix_mult(gain_trunc, n_s, n_nonnan_z, residuals_trunc, n_nonnan_z, 1, dx, n_s, 1);
+    // FULL: gsl.matrix_mult(gain, n_s, n_m, residuals, n_m, 1, dx, n_s, 1);
+    gsl.matrix_mult(gain_trunc, n_s, n_nonnan_z, residuals_trunc, n_nonnan_z, 1, dx, n_s, 1);
 
     for (i=0; i<n_s; i++)
     {
@@ -192,10 +192,10 @@ void KalmanFilter::update(double* measurements)
     utilities.unity(n_s, eye);
     double gain_jac_meas[n_s * n_s];
 
-    // FULL: utilities.matrix_mult(gain, n_s, n_m, jac_meas, n_m, n_s, gain_jac_meas, n_s, n_s);
+    // FULL: gsl.matrix_mult(gain, n_s, n_m, jac_meas, n_m, n_s, gain_jac_meas, n_s, n_s);
     double jac_meas_trunc[n_nonnan_z * n_s];
     utilities.get_rows(jac_meas, n_m, n_s, nonnan_z_idx, n_nonnan_z, jac_meas_trunc);
-    utilities.matrix_mult(gain_trunc, n_s, n_nonnan_z, jac_meas_trunc, n_nonnan_z, n_s, gain_jac_meas, n_s, n_s);
+    gsl.matrix_mult(gain_trunc, n_s, n_nonnan_z, jac_meas_trunc, n_nonnan_z, n_s, gain_jac_meas, n_s, n_s);
 
     double eye_gain_jac_meas[n_s * n_s];
     for (i=0; i<n_s; i++)
@@ -207,21 +207,21 @@ void KalmanFilter::update(double* measurements)
     }
     double s2_post_prev[n_s * n_s];
     double s2_tmp[n_s * n_s];
-    utilities.matrix_mult(eye_gain_jac_meas, n_s, n_s, s2_prior, n_s, n_s, s2_tmp, n_s, n_s);
+    gsl.matrix_mult(eye_gain_jac_meas, n_s, n_s, s2_prior, n_s, n_s, s2_tmp, n_s, n_s);
     double eye_gain_jac_meas_T[n_s * n_s];
     utilities.matrix_transpose(eye_gain_jac_meas, n_s, n_s, eye_gain_jac_meas_T);
-    utilities.matrix_mult(s2_tmp, n_s, n_s, eye_gain_jac_meas_T, n_s, n_s, s2_post_prev, n_s, n_s);
+    gsl.matrix_mult(s2_tmp, n_s, n_s, eye_gain_jac_meas_T, n_s, n_s, s2_post_prev, n_s, n_s);
 
     double kr[n_s * n_m];
-    // FULL: utilities.matrix_mult(gain, n_s, n_m, meas_noise, n_m, n_m, kr, n_s, n_m);
+    // FULL: gsl.matrix_mult(gain, n_s, n_m, meas_noise, n_m, n_m, kr, n_s, n_m);
     double meas_noise_trunc[n_nonnan_z * n_nonnan_z];
     double kr_trunc[n_s * n_nonnan_z];
     utilities.get_rows_cols(meas_noise, n_m, n_m, nonnan_z_idx, n_nonnan_z, meas_noise_trunc);
-    utilities.matrix_mult(gain_trunc, n_s, n_nonnan_z, meas_noise_trunc, n_nonnan_z, n_nonnan_z, kr_trunc, n_s, n_nonnan_z);
+    gsl.matrix_mult(gain_trunc, n_s, n_nonnan_z, meas_noise_trunc, n_nonnan_z, n_nonnan_z, kr_trunc, n_s, n_nonnan_z);
 
     double proj_noise[n_s * n_s];
-    // FULL: utilities.matrix_mult(kr, n_s, n_m, gain_T, n_m, n_s, proj_noise, n_s, n_s);
-    utilities.matrix_mult(kr_trunc, n_s, n_nonnan_z, gain_T_trunc, n_nonnan_z, n_s, proj_noise, n_s, n_s);
+    // FULL: gsl.matrix_mult(kr, n_s, n_m, gain_T, n_m, n_s, proj_noise, n_s, n_s);
+    gsl.matrix_mult(kr_trunc, n_s, n_nonnan_z, gain_T_trunc, n_nonnan_z, n_s, proj_noise, n_s, n_s);
     for (i=0; i<n_s; i++)
     {
         for (j=0; j<n_s; j++)

@@ -1,6 +1,7 @@
 #include "LaminarModel.h"
 #include <stdlib.h>
-#include <gsl/gsl_errno.h>
+
+#define GSL_SUCCESS 0
 
 using namespace std;
 

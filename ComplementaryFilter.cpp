@@ -27,7 +27,7 @@ void ComplementaryFilter::process(double dt, double* x, double* s2, double* thru
     utilities.set_elements(s2, s2_prior, n_s, 2);
 
     // 1. (a) propagate the mean state estimate, propagate x -> new x_prior
-    utilities.ode_iv(model, x, x_prior, n_s, dt, thrust);
+    gsl.ode_iv(model, x, x_prior, n_s, dt, thrust); // TODO: homegrown rk8 routine
 
     // 1. (b) propagate covariance as updated covariance of previous step with added process noise
     // s2 -> new s2_prior
@@ -54,21 +54,21 @@ void ComplementaryFilter::process(double dt, double* x, double* s2, double* thru
             jac_dt[i*n_s + j] = jac_lin[i*n_s + j] * dt;
         }
     }
-    utilities.matrix_exponential(jac_dt, n_s, phi); 
+    gsl.matrix_exponential(jac_dt, n_s, phi); // TODO: homegrown approx without gsl
     utilities.matrix_transpose(phi, n_s, n_s, phi_T);
 
     double phi_g[n_s * n_s];
     double phi_g_T[n_s * n_s];
-    utilities.matrix_mult(phi, n_s, n_s, g, n_s, n_s, phi_g, n_s, n_s);
+    gsl.matrix_mult(phi, n_s, n_s, g, n_s, n_s, phi_g, n_s, n_s); // TODO: homegrown version in utilities
     utilities.matrix_transpose(phi_g, n_s, n_s, phi_g_T);
     
     double s2_prior_prev[n_s * n_s];
-    utilities.matrix_mult(s2, n_s, n_s, phi_T, n_s, n_s, s2_prior_prev, n_s, n_s);
-    utilities.matrix_mult(phi, n_s, n_s, s2_prior_prev, n_s, n_s, s2_prior, n_s, n_s);
+    gsl.matrix_mult(s2, n_s, n_s, phi_T, n_s, n_s, s2_prior_prev, n_s, n_s);
+    gsl.matrix_mult(phi, n_s, n_s, s2_prior_prev, n_s, n_s, s2_prior, n_s, n_s);
     double process_noise[n_s * n_s];
     double phi_g_q[n_s * n_s];
-    utilities.matrix_mult(phi_g, n_s, n_s, q, n_s, n_s, phi_g_q, n_s, n_s);
-    utilities.matrix_mult(phi_g_q, n_s, n_s, phi_g_T, n_s, n_s, process_noise, n_s, n_s);
+    gsl.matrix_mult(phi_g, n_s, n_s, q, n_s, n_s, phi_g_q, n_s, n_s);
+    gsl.matrix_mult(phi_g_q, n_s, n_s, phi_g_T, n_s, n_s, process_noise, n_s, n_s);
 
     for (i=0; i<n_s; i++)
     {

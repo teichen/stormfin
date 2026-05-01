@@ -28,7 +28,9 @@ classDiagram
     Controller ..> Thrusters
     Controller ..> Collocation
     Controller ..> Utilities
+    Controller ..> DataStore
     Filter ..> Utilities
+    Filter ..> GSLWrappers
     Filter ..> LaminarModel
     Filter : +void initialize_state()
     Filter : +void process(double, double*, double*, double*, double*)
@@ -41,6 +43,8 @@ classDiagram
     Sensors : +void ultrasonic_distance(double)
     Thrusters : +void thrust_to_pwm(double*, double*)
     Collocation : +void optimal_thrust(double*, double*, int, double*)
+    Utilities : 
+    GSLWrappers : 
     DataStore : 
 ```
 

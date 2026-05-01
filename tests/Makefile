@@ -7,8 +7,8 @@ SHELL = /bin/sh
 # make clean
 
 OBJS_SENSORS_TEST = sensors_test.o ../Sensors.o
-OBJS_UTILITIES_TEST = utilities_test.o ../Utilities.o ../LaminarModel.o
-OBJS_FILTER_TEST = filter_test.o ../KalmanFilter.o ../ComplementaryFilter.o ../Utilities.o ../LaminarModel.o
+OBJS_UTILITIES_TEST = utilities_test.o ../Utilities.o ../GSLWrappers.o ../LaminarModel.o
+OBJS_FILTER_TEST = filter_test.o ../KalmanFilter.o ../ComplementaryFilter.o ../Utilities.o ../GSLWrappers.o ../LaminarModel.o
 CFLAGS = -g -O0
 CC = clang++
 INCLUDES =
