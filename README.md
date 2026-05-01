@@ -41,6 +41,7 @@ classDiagram
     Sensors : +void ultrasonic_distance(double)
     Thrusters : +void thrust_to_pwm(double*, double*)
     Collocation : +void optimal_thrust(double*, double*, int, double*)
+    DataStore : 
 ```
 
 ## test plan

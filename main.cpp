@@ -4,6 +4,7 @@
 #include "Controller.h"
 #include "Sensors.h"
 #include "Thrusters.h"
+#include "DataStore.h"
 #include <gperftools/profiler.h>
 #include <chrono>
 
@@ -61,6 +62,7 @@ int main()
     Sensors sensors; // utility functions, e.g. ref frame rotations
     Thrusters thrusters; // utility functions, e.g. effective thrust inputs
     Controller controller; // sensor fusion, estimation, navigation
+    DataStore datastore; // csv formatting
 
     int nav_state = DIVE;
     auto t0 = std::chrono::system_clock::now();
