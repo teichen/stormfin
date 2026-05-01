@@ -5,7 +5,7 @@
 using namespace std;
 
 static int n_states = 21;
-static int n_measurements = 8;
+static int n_measurements = 11; // magnetic sensor data included
 static int n_thrusters = 3;
 
 // all states and measurements in the NAV frame
@@ -17,9 +17,10 @@ DataStore::DataStore()
        thrusters (thrust inputs)
        mean state estimate
 
-       storing 32 doubles coming in at 100Hz and 64MB capacity we have approx. 43 min capacity
+       storing 35 doubles coming in at 100Hz and 64MB capacity we have approx. 40 min capacity
     */
-    std::string csv_header[32] = {"MI_OMEGA_X", "MI_OMEGA_Y", "MI_OMEGA_Z", "MI_A_X", "MI_A_Y", "MI_A_Z", "MI_X",
+    std::string csv_header[35] = {"MI_OMEGA_X", "MI_OMEGA_Y", "MI_OMEGA_Z", "MI_MAG_X", "MI_MAG_Y", "MI_MAG_Z",
+                                  "MI_A_X", "MI_A_Y", "MI_A_Z", "MI_X",
                                   "MI_Y", "UI_L", "UI_R", "UI_V", "SI_THETA_X", "SI_THETA_Y", "SI_THETA_Z",
                                   "SI_OMEGA_X", "SI_OMEGA_Y", "SI_OMEGA_Z", "SI_X", "SI_Y", "SI_Z", "SI_V_X",
                                   "SI_V_Y", "SI_V_Z", "SI_A_X", "SI_A_Y", "SI_A_Z", "SI_EPSILON_X", "SI_EPSILON_Y",

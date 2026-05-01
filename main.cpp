@@ -39,7 +39,7 @@ static int SURVEILLANCE = 3;
 static int STALK = 4;
 
 static int n_states = 21; // TODO: DRY
-static int n_measurements = 8;
+static int n_measurements = 8; // magnetic data not included
 static int n_thrusters = 3;
 
 static int MI_OMEGA_X = 0; // IMU gyro
@@ -96,6 +96,8 @@ int main()
 
     double omega_body[4];
     double omega_nav[4];
+    double mag_body[4];
+    double mag_nav[4];
     double a_body[4];
     double a_nav[4];
 
@@ -138,6 +140,7 @@ int main()
         imu::Quaternion quat = bno.getQuat();
         imu::Vector<3> gyro_data = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
         imu::Vector<3> accel_data = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
+        imu::Vector<3> mag_data = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
         */
         // TODO: swap in quat data
         q[0] = 0.0; // quat.w();
@@ -165,6 +168,16 @@ int main()
             omega_nav[i] = omega_body[i];
         }
         sensors.qrot_pure(q, omega_nav);
+
+        mag_body[0] = 0.0;
+        mag_body[1] = 0.1; // mag_data[0]
+        mag_body[2] = 0.1; // mag_data[1]
+        mag_body[3] = 0.1; // mag_data[2]
+        for (i=0; i<4; i++)
+        {
+            mag_nav[i] = mag_body[i];
+        }
+        sensors.qrot_pure(q, mag_nav);
 
         // tether to GPS buoy should minimize tilt, use linear acceleration (no gravity)
         // to avoid interpreting tilt as xy movement
