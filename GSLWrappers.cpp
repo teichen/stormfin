@@ -53,7 +53,6 @@ void GSLWrappers::matrix_mult(double* a, int n_a0, int n_a1, double* b, int n_b0
     gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, &a_matrix.matrix, &b_matrix.matrix, 0.0, &c_matrix.matrix);
 }
 
-
 void GSLWrappers::ode_iv(LaminarModel& model, double* x0, double* x, int n_x, double dt, double* u)
 {
     /* integrate an ode rate function, f
