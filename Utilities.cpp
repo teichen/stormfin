@@ -57,10 +57,7 @@ void Utilities::ode_iv(LaminarModel& model, double* x0, double* x, int n_x, doub
     set_elements(x0, x, n_x, 1);
     while (t < dt)
     {
-        // RK8 with adaptive step size
-        //status = gsl_odeiv2_evolve_apply (e, c, s, &sys, &t, dt, &h, x);
-
-        // temporary, use RK4
+        // RK4 
         status = model.rate(t, x, f, u);
         status = model.jacobian(t, x, dfdx, dfdt, &param);
         for (i=0; i<n_x; i++)
@@ -90,10 +87,8 @@ void Utilities::ode_iv(LaminarModel& model, double* x0, double* x, int n_x, doub
         }
 
         t += h;
-        set_elements(x, x0, n_x, 1);
         for (i=0; i<n_x; i++)
         {
-            // x[i] += f[i] * h; // Euler placeholder
             x[i] += (1.0 / 6.0) * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]);
         }
     }

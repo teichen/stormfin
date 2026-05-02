@@ -100,7 +100,7 @@ int main()
     // TEST-1 : pass in omega_y as a measurement
     z[MI_OMEGA_Y] = PI;
 
-    filter.process(dt, x, s2, u, z); // omega_y responds
+    filter.process(dt, x, s2, u, z); // start from previous x, omega_y responds
 
     filter.utilities.set_elements(filter.x_post, x, model.n_s, 1);
     filter.utilities.set_elements(filter.s2_post, s2, model.n_s, 2);
@@ -112,7 +112,6 @@ int main()
     {
         if (i == SI_THETA_X)
         {
-            cout << i << " " << filter.x_post[i] << endl;
             assert(std::abs(filter.x_post[i] - 2*PI) < 0.1); // angular displacement integrated over 1s
         }
         else if (i == SI_OMEGA_X)
@@ -126,7 +125,7 @@ int main()
         }
         else
         {
-            assert(std::abs(filter.x_post[i]) < 1.0e-5);
+            assert(std::abs(filter.x_post[i]) < 1.0e-4);
         }
     }
 

@@ -71,9 +71,8 @@ void GSLWrappers::ode_iv(LaminarModel& model, double* x0, double* x, int n_x, do
     double t0 = 0.0;
     double t = t0;
 
-    double dxdt_in[n_x], dxdt_out[n_x];
-
     int i, status;
+
     while (t < dt)
     {
         // RK8 with adaptive step size
