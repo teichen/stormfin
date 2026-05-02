@@ -23,7 +23,7 @@ Arduino Due (84MHz 32-bit ARM Cortex-M3 processor, 96KB SRAM) would struggle wit
 ## software overview
 ```mermaid
 classDiagram
-    Controller ..> Filter (KalmanFilter or ComplementaryFilter)
+    Controller ..> Filter
     Controller ..> Sensors
     Controller ..> Thrusters
     Controller ..> Collocation
