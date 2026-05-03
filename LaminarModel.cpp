@@ -6,7 +6,7 @@
 using namespace std;
 
 static int n_states = 21;
-static int n_measurements = 8;
+static int n_measurements = 10;
 static int n_thrusters = 3;
 
 // all states and measurements in the NAV frame
@@ -41,6 +41,8 @@ static int MI_A_Y = 4;
 static int MI_A_Z = 5;
 static int MI_X = 6; // GPS
 static int MI_Y = 7;
+static int MI_V_X = 8;
+static int MI_V_Y = 9;
 
 static int UI_L = 0; // left thruster (forward/reverse)
 static int UI_R = 1; // right thruster (forward/reverse)
@@ -190,6 +192,8 @@ void LaminarModel::estimate_measurements(double *x, double *zhat)
     zhat[MI_A_Z] = x[SI_A_Z] + x[SI_BETA_Z];
     zhat[MI_X] = x[SI_X];
     zhat[MI_Y] = x[SI_Y];
+    zhat[MI_V_X] = x[SI_V_X];
+    zhat[MI_V_Y] = x[SI_V_Y];
 }
 
 void LaminarModel::measurement_jacobian(double *x, double *dzhatdx)
@@ -216,6 +220,8 @@ void LaminarModel::measurement_jacobian(double *x, double *dzhatdx)
     dzhatdx[MI_A_Z * n_states + SI_BETA_Z] = 1.0;
     dzhatdx[MI_X * n_states + SI_X] = 1.0;
     dzhatdx[MI_Y * n_states + SI_Y] = 1.0;
+    dzhatdx[MI_V_X * n_states + SI_V_X] = 1.0;
+    dzhatdx[MI_V_Y * n_states + SI_V_Y] = 1.0;
 }
 
 void LaminarModel::linearized_measurement_jacobian(double *x, double *dzhatdx)

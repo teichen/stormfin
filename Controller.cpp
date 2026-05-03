@@ -21,11 +21,8 @@ void Controller::process(double dt, double* x, double* s2, double* thrust, doubl
     */
     if (filter_type == "on-board")
     {
-        cf.process(dt, x, s2, thrust, measurements);
-
-        // update input mean state and covariance with the posterior estimates in the filter
+        cf.process(dt, x, thrust, measurements);
         utilities.set_elements(cf.x_post, x, cf.n_s, 1);
-        utilities.set_elements(cf.s2_post, s2, cf.n_s, 2);
     }
     else if (filter_type == "off-board")
     {

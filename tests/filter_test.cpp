@@ -42,6 +42,8 @@ static int MI_A_Y = 4;
 static int MI_A_Z = 5;
 static int MI_X = 6; // GPS
 static int MI_Y = 7;
+static int MI_V_X = 8;
+static int MI_V_Y = 9;
 
 int main()
 {

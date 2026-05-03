@@ -39,7 +39,7 @@ static int SURVEILLANCE = 3;
 static int STALK = 4;
 
 static int n_states = 21; // TODO: DRY
-static int n_measurements = 8; // magnetic data not included
+static int n_measurements = 10; // magnetic data not included
 static int n_thrusters = 3;
 
 static int MI_OMEGA_X = 0; // IMU gyro
@@ -50,6 +50,8 @@ static int MI_A_Y = 4;
 static int MI_A_Z = 5;
 static int MI_X = 6; // GPS
 static int MI_Y = 7;
+static int MI_V_X = 8;
+static int MI_V_Y = 9;
 
 using namespace std;
 
