@@ -6,7 +6,7 @@
 using namespace std;
 
 static int n_states = 21;
-static int n_measurements = 10;
+static int n_measurements = 13;
 static int n_thrusters = 3;
 
 // all states and measurements in the NAV frame
@@ -43,6 +43,9 @@ static int MI_X = 6; // GPS
 static int MI_Y = 7;
 static int MI_V_X = 8;
 static int MI_V_Y = 9;
+static int MI_B_X = 10; // IMU mag
+static int MI_B_Y = 11;
+static int MI_B_Z = 12;
 
 static int UI_L = 0; // left thruster (forward/reverse)
 static int UI_R = 1; // right thruster (forward/reverse)

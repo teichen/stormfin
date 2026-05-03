@@ -39,7 +39,7 @@ static int SURVEILLANCE = 3;
 static int STALK = 4;
 
 static int n_states = 21; // TODO: DRY
-static int n_measurements = 10; // magnetic data not included
+static int n_measurements = 13;
 static int n_thrusters = 3;
 
 static int MI_OMEGA_X = 0; // IMU gyro
@@ -52,6 +52,9 @@ static int MI_X = 6; // GPS
 static int MI_Y = 7;
 static int MI_V_X = 8;
 static int MI_V_Y = 9;
+static int MI_B_X = 10; // IMU mag
+static int MI_B_Y = 11;
+static int MI_B_Z = 12;
 
 using namespace std;
 
@@ -206,6 +209,9 @@ int main()
         z[MI_A_Z] = a_nav[3];
         z[MI_X] = longitude;
         z[MI_Y] = latitude;
+        z[MI_B_X] = mag_nav[1];
+        z[MI_B_Y] = mag_nav[2];
+        z[MI_B_Z] = mag_nav[3];
 
         /*
         // next, the IP68 UART ultrasonic sensor

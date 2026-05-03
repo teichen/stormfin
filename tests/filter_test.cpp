@@ -44,6 +44,9 @@ static int MI_X = 6; // GPS
 static int MI_Y = 7;
 static int MI_V_X = 8;
 static int MI_V_Y = 9;
+static int MI_B_X = 10; // IMU mag
+static int MI_B_Y = 11;
+static int MI_B_Z = 12;
 
 int main()
 {
