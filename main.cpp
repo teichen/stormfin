@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdlib>
 #include "Controller.h"
+#include "LaminarModel.h"
 #include "Sensors.h"
 #include "Thrusters.h"
 #include "DataStore.h"
@@ -38,24 +39,6 @@ static int SURFACE = 2;
 static int SURVEILLANCE = 3;
 static int STALK = 4;
 
-static int n_states = 21; // TODO: DRY
-static int n_measurements = 13;
-static int n_thrusters = 3;
-
-static int MI_OMEGA_X = 0; // IMU gyro
-static int MI_OMEGA_Y = 1;
-static int MI_OMEGA_Z = 2;
-static int MI_A_X = 3; // IMU accel
-static int MI_A_Y = 4;
-static int MI_A_Z = 5;
-static int MI_X = 6; // GPS
-static int MI_Y = 7;
-static int MI_V_X = 8;
-static int MI_V_Y = 9;
-static int MI_B_X = 10; // IMU mag
-static int MI_B_Y = 11;
-static int MI_B_Z = 12;
-
 using namespace std;
 
 int main()
@@ -68,23 +51,19 @@ int main()
     Thrusters thrusters; // utility functions, e.g. effective thrust inputs
     Controller controller; // sensor fusion, estimation, navigation
     DataStore datastore; // csv formatting
+    LaminarModel model;
 
     int nav_state = DIVE;
     auto t0 = std::chrono::system_clock::now();
 
-    double x[n_states];
-    double s2[n_states * n_states];
-    double z[n_measurements];
+    double x[model.n_s];
+    double s2[model.n_s * model.n_s];
+    double z[model.n_m];
 
     int i,j;
-    for (i=0; i<n_states; i++)
-    {
-        x[i] = 0.0; // TODO: FIX: pull in from model
-        for (j=0; j<n_states; j++)
-        {
-            s2[i*n_states + j] = 0.0;
-        }
-    }
+    
+    model.init_state(x);
+    model.init_covariance(s2);
     /*
     // arduino setup()
     Serial.begin(115200); // BNO055
@@ -106,7 +85,7 @@ int main()
     double a_body[4];
     double a_nav[4];
 
-    double latitude, longitude;
+    double latitude, longitude, speed, gps_angle;
 
     double d0 = 0.0; // previous distance [=] cm, placeholder
     double d = 0.0; // current distance    
@@ -200,18 +179,22 @@ int main()
         // TODO: get GPS data
         latitude = 0.0;
         longitude = 0.0;
+        speed = 0.0;
+        gps_angle = 0.0;
 
-        z[MI_OMEGA_X] = omega_nav[1];
-        z[MI_OMEGA_Y] = omega_nav[2];
-        z[MI_OMEGA_Z] = omega_nav[3];
-        z[MI_A_X] = a_nav[1];
-        z[MI_A_Y] = a_nav[2];
-        z[MI_A_Z] = a_nav[3];
-        z[MI_X] = longitude;
-        z[MI_Y] = latitude;
-        z[MI_B_X] = mag_nav[1];
-        z[MI_B_Y] = mag_nav[2];
-        z[MI_B_Z] = mag_nav[3];
+        z[model.mi_omega_x] = omega_nav[1];
+        z[model.mi_omega_y] = omega_nav[2];
+        z[model.mi_omega_z] = omega_nav[3];
+        z[model.mi_a_x] = a_nav[1];
+        z[model.mi_a_y] = a_nav[2];
+        z[model.mi_a_z] = a_nav[3];
+        z[model.mi_x] = longitude;
+        z[model.mi_y] = latitude;
+        z[model.mi_v_x] = speed * std::cos(gps_angle);
+        z[model.mi_v_y] = speed * std::sin(gps_angle);
+        z[model.mi_b_x] = mag_nav[1];
+        z[model.mi_b_y] = mag_nav[2];
+        z[model.mi_b_z] = mag_nav[3];
 
         /*
         // next, the IP68 UART ultrasonic sensor

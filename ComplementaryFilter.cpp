@@ -25,10 +25,34 @@ void ComplementaryFilter::process(double dt, double* x, double* thrust, double* 
        sensor fusion of accelerometer and GPS data for translation
        using a low pass and high pass filtering scheme
     */
-    utilities.set_elements(x, x_prior, n_s, 1);
 
     // set prior with sensor data (assuming no noise)
-    // TODO, if (!std::isnan(measurements[i]))
+    if (!std::isnan(measurements[model.mi_a_x]))
+    {
+        x[model.si_a_x] = measurements[model.mi_a_x];
+    }
+    if (!std::isnan(measurements[model.mi_a_y]))
+    {
+        x[model.si_a_y] = measurements[model.mi_a_y];
+    }
+    if (!std::isnan(measurements[model.mi_a_z]))
+    {
+        x[model.si_a_z] = measurements[model.mi_a_z];
+    }
+    if (!std::isnan(measurements[model.mi_omega_x]))
+    {
+        x[model.si_omega_x] = measurements[model.mi_omega_x];
+    }
+    if (!std::isnan(measurements[model.mi_omega_y]))
+    {
+        x[model.si_omega_y] = measurements[model.mi_omega_y];
+    }
+    if (!std::isnan(measurements[model.mi_omega_z]))
+    {
+        x[model.si_omega_z] = measurements[model.mi_omega_z];
+    }
+
+    utilities.set_elements(x, x_prior, n_s, 1);
 
     // reduced model contains the attitude model to propagate for the low pass filter of gyrometer data
     // reduced model contains the translation model to propagate for the low pass filter of accelerometer data

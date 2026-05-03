@@ -11,29 +11,7 @@ using std::endl;
 
 using namespace std;
 
-// TODO: DRY
 const double PI = 3.14159265358979323846;
-static int SI_THETA_X = 0; // angular displacement
-static int SI_THETA_Y = 1;
-static int SI_THETA_Z = 2;
-static int SI_OMEGA_X = 3; // angular velocity
-static int SI_OMEGA_Y = 4;
-static int SI_OMEGA_Z = 5;
-static int SI_X = 6; // linear displacement
-static int SI_Y = 7;
-static int SI_Z = 8;
-static int SI_V_X = 9; // linear velocity
-static int SI_V_Y = 10;
-static int SI_V_Z = 11;
-static int SI_A_X = 12; // linear acceleration
-static int SI_A_Y = 13;
-static int SI_A_Z = 14;
-static int SI_EPSILON_X = 15; // gyro drift
-static int SI_EPSILON_Y = 16;
-static int SI_EPSILON_Z = 17;
-static int SI_BETA_X = 18; // accel bias
-static int SI_BETA_Y = 19;
-static int SI_BETA_Z = 20;
 
 int main()
 {
@@ -114,13 +92,13 @@ int main()
     }    
 
     model.init_state(x0);
-    x0[SI_OMEGA_X] = PI; // [=] rad / s
+    x0[model.si_omega_x] = PI; // [=] rad / s
     utilities.set_elements(x0, x, model.n_s, 1);
     double dt = 1.0; // [=] s
 
     for (i=0; i<model.n_s; i++)
     {
-        if (i == SI_OMEGA_X)
+        if (i == model.si_omega_x)
         {
             assert(x[i] == PI); // angular velocity
         }
@@ -134,7 +112,7 @@ int main()
 
     for (i=0; i<model.n_s; i++)
     {
-        if ((i == SI_THETA_X) or (i == SI_OMEGA_X))
+        if ((i == model.si_theta_x) or (i == model.si_omega_x))
         {
             assert(std::abs(x[i] - PI) < 0.1); // angular displacement integrated over 1s
         }

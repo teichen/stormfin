@@ -61,6 +61,44 @@ LaminarModel::LaminarModel()
     n_s = n_states;
     n_m = n_measurements;
     n_u = n_thrusters;
+
+    si_theta_x = SI_THETA_X;
+    si_theta_y = SI_THETA_Y;
+    si_theta_z = SI_THETA_Z;
+    si_omega_x = SI_OMEGA_X;
+    si_omega_y = SI_OMEGA_Y;
+    si_omega_z = SI_OMEGA_Z;
+    si_x = SI_X;
+    si_y = SI_Y;
+    si_z = SI_Z;
+    si_v_x = SI_V_X;
+    si_v_y = SI_V_Y;
+    si_v_z = SI_V_Z;
+    si_a_x = SI_A_X;
+    si_a_y = SI_A_Y;
+    si_a_z = SI_A_Z;
+    si_epsilon_x = SI_EPSILON_X;
+    si_epsilon_y = SI_EPSILON_Y;
+    si_epsilon_z = SI_EPSILON_Z;
+    si_beta_x = SI_BETA_X;
+    si_beta_y = SI_BETA_Y;
+    si_beta_z = SI_BETA_Z;
+    mi_omega_x = MI_OMEGA_X;
+    mi_omega_y = MI_OMEGA_Y;
+    mi_omega_z = MI_OMEGA_Z;
+    mi_a_x = MI_A_X;
+    mi_a_y = MI_A_Y;
+    mi_a_z = MI_A_Z;
+    mi_x = MI_X;
+    mi_y = MI_Y;
+    mi_v_x = MI_V_X;
+    mi_v_y = MI_V_Y;
+    mi_b_x = MI_B_X;
+    mi_b_y = MI_B_Y;
+    mi_b_z = MI_B_Z;
+    ui_l = UI_L;
+    ui_r = UI_R;
+    ui_v = UI_V;
 }
 
 void LaminarModel::init_meas_noise(double *meas_noise)
