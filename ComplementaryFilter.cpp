@@ -25,38 +25,37 @@ void ComplementaryFilter::process(double dt, double* x, double* thrust, double* 
        sensor fusion of accelerometer and GPS data for translation
        using a low pass and high pass filtering scheme
     */
-
-    // set prior with sensor data (assuming no noise)
-    if (!std::isnan(measurements[model.mi_a_x]))
-    {
-        x[model.si_a_x] = measurements[model.mi_a_x];
-    }
-    if (!std::isnan(measurements[model.mi_a_y]))
-    {
-        x[model.si_a_y] = measurements[model.mi_a_y];
-    }
-    if (!std::isnan(measurements[model.mi_a_z]))
-    {
-        x[model.si_a_z] = measurements[model.mi_a_z];
-    }
-    if (!std::isnan(measurements[model.mi_omega_x]))
-    {
-        x[model.si_omega_x] = measurements[model.mi_omega_x];
-    }
-    if (!std::isnan(measurements[model.mi_omega_y]))
-    {
-        x[model.si_omega_y] = measurements[model.mi_omega_y];
-    }
-    if (!std::isnan(measurements[model.mi_omega_z]))
-    {
-        x[model.si_omega_z] = measurements[model.mi_omega_z];
-    }
-
     utilities.set_elements(x, x_prior, n_s, 1);
 
     // reduced model contains the attitude model to propagate for the low pass filter of gyrometer data
     // reduced model contains the translation model to propagate for the low pass filter of accelerometer data
     utilities.ode_iv(model, x, x_prior, n_s, dt, thrust);
+
+    // set prior with sensor data (assuming no noise)
+    if (!std::isnan(measurements[model.mi_a_x]))
+    {
+        x_prior[model.si_a_x] = measurements[model.mi_a_x];
+    }
+    if (!std::isnan(measurements[model.mi_a_y]))
+    {
+        x_prior[model.si_a_y] = measurements[model.mi_a_y];
+    }
+    if (!std::isnan(measurements[model.mi_a_z]))
+    {
+        x_prior[model.si_a_z] = measurements[model.mi_a_z];
+    }
+    if (!std::isnan(measurements[model.mi_omega_x]))
+    {
+        x_prior[model.si_omega_x] = measurements[model.mi_omega_x];
+    }
+    if (!std::isnan(measurements[model.mi_omega_y]))
+    {
+        x_prior[model.si_omega_y] = measurements[model.mi_omega_y];
+    }
+    if (!std::isnan(measurements[model.mi_omega_z]))
+    {
+        x_prior[model.si_omega_z] = measurements[model.mi_omega_z];
+    }
 
     update(measurements);
 }
@@ -68,11 +67,27 @@ void ComplementaryFilter::update(double* measurements)
     // attitude
     // high pass filter is input linear accelerometer and gyro magnetic data
     // low pass filter is integrated angular velocity
-    double roll_from_acc = std::atan(measurements[model.mi_a_y] / measurements[model.mi_a_z]);
-    double pitch_from_acc = std::atan(-measurements[model.mi_a_x] / (measurements[model.mi_a_y] * std::sin(roll_from_acc) + measurements[model.mi_a_z] * std::cos(roll_from_acc)));
-    double yaw_from_acc = std::atan((measurements[model.mi_b_z] * std::sin(roll_from_acc) - measurements[model.mi_b_y] * std::cos(roll_from_acc)) / (measurements[model.mi_b_x] * std::cos(pitch_from_acc) + measurements[model.mi_b_y] * std::sin(pitch_from_acc) * std::sin(roll_from_acc) + measurements[model.mi_b_z] * std::sin(pitch_from_acc) * std::cos(roll_from_acc)));
+    double roll_from_acc, pitch_from_acc, yaw_from_acc;
+    if (!std::isnan(measurements[model.mi_a_x]) and !std::isnan(measurements[model.mi_a_y]) and !std::isnan(measurements[model.mi_a_z]))
+    {
+        roll_from_acc = std::atan(measurements[model.mi_a_y] / measurements[model.mi_a_z]);
+        pitch_from_acc = std::atan(-measurements[model.mi_a_x] / (measurements[model.mi_a_y] * std::sin(roll_from_acc) + measurements[model.mi_a_z] * std::cos(roll_from_acc)));
+        if (!std::isnan(measurements[model.mi_b_x]) and !std::isnan(measurements[model.mi_b_y]) and !std::isnan(measurements[model.mi_b_z]))
+        {
+            yaw_from_acc = std::atan((measurements[model.mi_b_z] * std::sin(roll_from_acc) - measurements[model.mi_b_y] * std::cos(roll_from_acc)) / (measurements[model.mi_b_x] * std::cos(pitch_from_acc) + measurements[model.mi_b_y] * std::sin(pitch_from_acc) * std::sin(roll_from_acc) + measurements[model.mi_b_z] * std::sin(pitch_from_acc) * std::cos(roll_from_acc)));
+        }
+        else
+        {
+            yaw_from_acc = 0.0;
+        }
+    }
+    else
+    {
+        roll_from_acc = 0.0;
+        pitch_from_acc = 0.0;
+    }
 
-    if (!std::isnan(roll_from_acc))
+    if (roll_from_acc > 0.0)
     {
         x_post[model.si_theta_x] = alpha_att * x_prior[model.si_theta_x] + (1.0 - alpha_att) * roll_from_acc;
     }
@@ -80,7 +95,7 @@ void ComplementaryFilter::update(double* measurements)
     {
         x_post[model.si_theta_x] = x_prior[model.si_theta_x];
     }
-    if (!std::isnan(pitch_from_acc))
+    if (pitch_from_acc > 0.0)
     {
         x_post[model.si_theta_y] = alpha_att * x_prior[model.si_theta_y] + (1.0 - alpha_att) * pitch_from_acc;
     }
@@ -88,7 +103,7 @@ void ComplementaryFilter::update(double* measurements)
     {
         x_post[model.si_theta_y] = x_prior[model.si_theta_y];
     }
-    if (!std::isnan(yaw_from_acc))
+    if (yaw_from_acc > 0.0)
     {
         x_post[model.si_theta_z] = alpha_att * x_prior[model.si_theta_z] + (1.0 - alpha_att) * yaw_from_acc;
     }
