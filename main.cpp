@@ -20,6 +20,8 @@ TODO: automate main.cpp->arduino main.ino.cpp
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 #include <Servo.h>
+#include <SPI.h>
+#include <SD.h>
 
 //Set the delay between fresh samples
 uint16_t BNO055_SAMPLERATE_DELAY_MS = 100;
@@ -33,11 +35,15 @@ unsigned char ultrasonic_data[4];
 
 Servo ESC;
 */
+
 static int STOP = 0;
 static int DIVE = 1;
 static int SURFACE = 2;
 static int SURVEILLANCE = 3;
 static int STALK = 4;
+
+const int chipSelect = 10;
+string data_string = "";
 
 using namespace std;
 
@@ -284,6 +290,23 @@ int main()
 
         d0 = d;
         t0 = t;
+
+        /* TODO: data logging
+        File dataFile = SD.open("datalog.txt", FILE_WRITE);
+
+        // if the file is available, write to it:
+        if (dataFile) {
+            dataFile.println(dataString);
+            dataFile.close();
+            // print to the serial port too:
+            Serial.println(dataString);
+        }
+        // if the file isn't open, pop up an error:
+        else {
+            Serial.println("error opening datalog.txt");
+        }
+        */
+
         break; // for testing
     }
 
