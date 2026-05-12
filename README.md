@@ -1,5 +1,13 @@
-# stormfin
+# StormFin
 underactuated fish finder
+# ChibbComm
+raspberry pi land communicator and StormFin controller
+
+## motivation
+avoiding $1500+ Garbin LiveScope Plus \
+current state of the art is forward facing sonar \
+steerable transducer on trolling motor, 20 deg sonar beam, 100 ft range \
+proposal - AUV tracking
 
 ![prototyping](1000007958.jpg)
 
@@ -19,6 +27,9 @@ Arduino Due (84MHz 32-bit ARM Cortex-M3 processor, 96KB SRAM) would struggle wit
     8. GLONASS + GPS PA1616D - 99 channel w/ 10Hz
     9. ESC (20A) with BEC speed controller
     10. 64MB microSD
+    11. Raspberry Pi Model B+
+    12. UBEC DC/DC Step-Down (Buck) Converter - 5V @ 3A output
+    13. B6AC 80W Balance Charger
 
 ## software overview
 ```mermaid
