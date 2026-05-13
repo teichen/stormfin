@@ -9,7 +9,8 @@ current state of the art is forward facing sonar \
 steerable transducer on trolling motor, 20 deg sonar beam, 100 ft range \
 proposal - AUV tracking
 
-![prototyping](1000007958.jpg)
+![prototyping0](1000008055.jpg)
+![prototyping1](1000008054.jpg)
 
 ## microcontroller board
 Adafruit METRO 328 / Arduino Nano Complementary Filtering on-board \
