@@ -32,6 +32,17 @@ Arduino Due (84MHz 32-bit ARM Cortex-M3 processor, 96KB SRAM) would struggle wit
     12. UBEC DC/DC Step-Down (Buck) Converter - 5V @ 3A output
     13. B6AC 80W Balance Charger
 
+## powering/wiring StormFin and ChibbComm
+    1. 11.1V 2.2A 25C LiPo battery (a) provides 610W continuous - two A2212 930KV motors draw 150W each
+    2. 12V to 5V buck converter and single A2212 930KV motor on LiPo (b)
+    3. StormFin IP68 10 pin to ChibbComm - 30m ethernet CAT6 unshielded w/ durable insulation
+    4. Arduino to IP68 10 pin - 1m 10 core 24 AWG
+    5. ESC to Arduino - 3 wire 60 core 22 AWG
+    6. LiPo to ESC - 14 AWG silicon insulated stranded tinned copper
+    7. LiPo to buck converter - 14 AWG silicon insulated stranded tinned copper
+    8. LiPo to 12V camera - 14 AWG silicon insulated stranded tinned copper
+    9. ChibbComm 12 camera draws 30W
+
 ## software overview
 ```mermaid
 classDiagram
