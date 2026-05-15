@@ -117,6 +117,28 @@ void acquire_target(double* q, double* u, double dt, double d, double* r_nav){
     sensors.body_to_nav(q, r_body, r_nav);
 }
 
+void qrot_imu_data(double* q, double* omega_body, double* mag_body, double* a_body, double* omega_nav, double* mag_nav, double* a_nav)
+{
+    for (i=0; i<4; i++)
+    {
+        omega_nav[i] = omega_body[i];
+    }
+    sensors.qrot_pure(q, omega_nav);
+
+    for (i=0; i<4; i++)
+    {
+        mag_nav[i] = mag_body[i];
+    }
+    sensors.qrot_pure(q, mag_nav);
+
+    for (i=0; i<4; i++)
+    {
+        a_nav[i] = a_body[i];
+    }
+    sensors.qrot_pure(q, a_nav);
+}
+
+
 int main()
 {
     ProfilerStart("/tmp/prof.out"); // memory profiler
@@ -195,29 +217,16 @@ int main()
         q[2] = 0.0; // quat.y();
         q[3] = 0.0; // quat.z();
 
-        /* body frame sufficient for stabilization, navigation frame needed for
-           fusion with GPS and fault tolerance
-        */
         // TODO: swap in gyro_data, [=] radians / s
         omega_body[0] = 0.0;
         omega_body[1] = 1.0; // gyro_data[0];
         omega_body[2] = 0.0; // gyro_data[1];
         omega_body[3] = 0.0; // gyro_data[2];
-        for (i=0; i<4; i++)
-        {
-            omega_nav[i] = omega_body[i];
-        }
-        sensors.qrot_pure(q, omega_nav);
 
         mag_body[0] = 0.0;
         mag_body[1] = 0.1; // mag_data[0]
         mag_body[2] = 0.1; // mag_data[1]
         mag_body[3] = 0.1; // mag_data[2]
-        for (i=0; i<4; i++)
-        {
-            mag_nav[i] = mag_body[i];
-        }
-        sensors.qrot_pure(q, mag_nav);
 
         // tether to GPS buoy should minimize tilt, use linear acceleration (no gravity)
         // to avoid interpreting tilt as xy movement
@@ -226,11 +235,11 @@ int main()
         a_body[1] = 0.0; // accel_data[0]
         a_body[2] = 0.5; // accel_data[1]
         a_body[3] = 0.0; // accel_data[2]
-        for (i=0; i<4; i++)
-        {
-            a_nav[i] = a_body[i];
-        }
-        sensors.qrot_pure(q, a_nav);
+
+        /* body frame sufficient for stabilization, navigation frame needed for
+           fusion with GPS and fault tolerance
+        */
+        qrot_imu_data(q, omega_body, mag_body, a_body, omega_nav, mag_nav, a_nav);
 
         // TODO: get GPS data
         latitude = 0.0;
