@@ -117,7 +117,6 @@ int main()
 
     ESC.attach(9, 1000, 2000); // ESC connected to PIN 9
     */
-
     pwm[0] = 0.0;
     pwm[1] = 0.0;
     pwm[2] = 0.0;
@@ -218,34 +217,12 @@ int main()
             }
         }
 
-        if (nav_state == DIVE){
-            u[0] = 0.0;
-            u[1] = 0.0;
-            u[2] = -1.0; // well below 15N capacity
-        }
-        else if (nav_state == SURFACE) {
-            u[0] = 0.0;
-            u[1] = 0.0;
-            u[2] = 1.0;
-        }
-        else if (nav_state == SURVEILLANCE) {
-            u[0] = 0.1;
-            u[1] = 2.0 * u[0]; // circle
-            u[2] = 0.0;
-        }
-        else if (nav_state == STOP) {
+        thrusters.thrust_state(nav_state, u_set, idx_set, u);
+        if (nav_state == STOP){
             // save off last thrust configuration
             u_saved[0] = u[0];
             u_saved[1] = u[1];
             u_saved[2] = u[2];
-            u[0] = 0.0;
-            u[1] = 0.0;
-            u[2] = 0.0;
-        }
-        else if (nav_state == STALK) {
-            u[0] = u_set[idx_set * 3 + 0];
-            u[1] = u_set[idx_set * 3 + 1];
-            u[2] = u_set[idx_set * 3 + 2];
         }
 
         thrusters.thrust_to_pwm(u, pwm);

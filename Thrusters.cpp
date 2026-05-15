@@ -6,6 +6,13 @@ using namespace std;
 
 static int c = 100;
 
+// TODO DRY
+static int STOP = 0;
+static int DIVE = 1;
+static int SURFACE = 2;
+static int SURVEILLANCE = 3;
+static int STALK = 4;
+
 Thrusters::Thrusters()
 {
     /* A2212 930KV brushless motors
@@ -30,6 +37,35 @@ void Thrusters::thrust_to_pwm(double* u, int* pwm)
     for (i=0; i<3; i++)
     {
         pwm[i] = static_cast<int>(std::floor(u[i] * c));
+    }
+}
+
+void Thrusters::thrust_state(int nav_state, double* u_set, int idx_set, double* u)
+{
+    if (nav_state == DIVE){
+        u[0] = 0.0;
+        u[1] = 0.0;
+        u[2] = -1.0; // well below 15N capacity
+    }
+    else if (nav_state == SURFACE) {
+        u[0] = 0.0;
+        u[1] = 0.0;
+        u[2] = 1.0;
+    }
+    else if (nav_state == SURVEILLANCE) {
+        u[0] = 0.1;
+        u[1] = 2.0 * u[0]; // circle
+        u[2] = 0.0;
+    }
+    else if (nav_state == STOP) {
+        u[0] = 0.0;
+        u[1] = 0.0;
+        u[2] = 0.0;
+    }
+    else if (nav_state == STALK) {
+        u[0] = u_set[idx_set * 3 + 0];
+        u[1] = u_set[idx_set * 3 + 1];
+        u[2] = u_set[idx_set * 3 + 2];
     }
 }
 
