@@ -43,6 +43,9 @@ static int SURFACE = 2;
 static int SURVEILLANCE = 3;
 static int STALK = 4;
 
+// TODO: DRY with LaminarModel
+double thrust_utilization = 0.5; // forward thrust excluding rotation
+
 const int chipSelect = 10;
 string data_string = "";
 
@@ -84,26 +87,33 @@ double d_stop = d;
 
 int pwm[3];
 double u[3]; // thrust: L forward/reverse, R forward/reverse, Vertical (dive/surface)
+double u_saved[3];
 double dt_closest = 3600.0;
 
 using namespace std;
 
-void acquire_target(double* q, double dt, double d, double* r_nav){
+void acquire_target(double* q, double* u, double dt, double d, double* r_nav){
     /* calculate r_nav from damped inertia
        q: quarternion data, quat.w(), quat.x(), quat.y(), quat.z()
+       u: last thrust configuration before damped inertia
        dt: time difference since r_body was acquired (start of STOP until target lost)
        d: distance at trigger of STOP state
        r_nav: estimate vector to target
     */
-    // TODO:
     // 2s velocity decay due to water drag, v(t) = v(0) * exp(-dt / tau) with tau=2s
-    r_body[0] = 1.0;
-    r_body[1] = 0.0;
+    // on target initially
+    // account for drag, 1N ~ 60cm/s
+    double tau = 2.0;
+    double v[3];
+    v[0] = (5.0 / 2.0) * (u[1] - u[0]); // omega_z * y, M=R=1?
+    v[1] = thrust_utilization * (u[0] + u[1]);
+    v[2] = 0.0;
+
+    // initially oriented along y when target acquired
+    r_body[0] = 0.0 + v[0] * dt - v[0] / (2.0 * tau) * dt * dt;
+    r_body[1] = d + v[1] * dt - v[1] / (2.0 * tau) * dt * dt;
     r_body[2] = 0.0;
 
-    r_nav[0] = 0.0;
-    r_nav[1] = 0.0;
-    r_nav[2] = 0.0;
     sensors.body_to_nav(q, r_body, r_nav);
 }
 
@@ -147,6 +157,9 @@ int main()
     u[0] = 0.0;
     u[1] = 0.0;
     u[2] = 0.0;
+    u_saved[0] = u[0];
+    u_saved[1] = u[1];
+    u_saved[2] = u[2];
 
     // arduino loop()
     while (true) {
@@ -267,7 +280,6 @@ int main()
         auto t = std::chrono::system_clock::now();
         dt = (t - t0) / dt1s;
 
-        // TODO: fill z with sensor data
         controller.process(dt, x, s2, u, z);
 
         if (d < 30){
@@ -296,7 +308,7 @@ int main()
                 {
                     // previously stopped, damped inertia, target acquisition
                     dt_stop = (t - t_stop) / dt1s;
-                    acquire_target(q, dt_stop, d_stop, r_nav);
+                    acquire_target(q, u_saved, dt_stop, d_stop, r_nav);
 
                     // calculate thrust profile provided vector to target, r_nav
                     // t_set = (t_0, t_1, t_2, ..., t_nt)
@@ -338,15 +350,18 @@ int main()
             u[2] = 0.0;
         }
         else if (nav_state == STOP) {
+            // save off last thrust configuration
+            u_saved[0] = u[0];
+            u_saved[1] = u[1];
+            u_saved[2] = u[2];
             u[0] = 0.0;
             u[1] = 0.0;
             u[2] = 0.0;
         }
         else if (nav_state == STALK) {
-            // account for drag, 1N ~ 60cm/s
-            u[0] = u_set[idx_set * 3 + 0] / dt / 60 * 0.2;
-            u[1] = u_set[idx_set * 3 + 1] / dt / 60 * 0.2;
-            u[2] = u_set[idx_set * 3 + 2] / dt / 60 * 0.2;
+            u[0] = u_set[idx_set * 3 + 0];
+            u[1] = u_set[idx_set * 3 + 1];
+            u[2] = u_set[idx_set * 3 + 2];
         }
 
         thrusters.thrust_to_pwm(u, pwm);
