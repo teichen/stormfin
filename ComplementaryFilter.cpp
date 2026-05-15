@@ -4,8 +4,8 @@
 
 using namespace std;
 
-static double alpha_att = 0.9; // stronger weight gyro data over accelerometer data
-static double alpha_trans = 0.9; // stronger weight accelerometer data over GPS data
+static double alpha_att = 0.98; // stronger weight gyro data over accelerometer data
+static double alpha_trans = 0.98; // stronger weight accelerometer data over GPS data
 
 ComplementaryFilter::ComplementaryFilter()
 {
