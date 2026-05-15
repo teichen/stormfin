@@ -33,8 +33,10 @@ void Collocation::optimal_thrust(double* r, double* t, int n_t, double* u)
     int i;
     for (i=0; i<n_t; i++)
     {
-        u[i*2 + 0] = 6.0 * r[0] * (2.0 * t[i] - 1.0); // optimal x thrust at time t[i]
-        u[i*2 + 1] = 6.0 * r[1] * (2.0 * t[i] - 1.0); // optimal y thrust at time t[i]
+        t[i] = i * 1.0; // dt = 1s
+        u[i*3 + 0] = 6.0 * r[0] * (2.0 * t[i] - 1.0); // optimal x thrust at time t[i]
+        u[i*3 + 1] = 6.0 * r[1] * (2.0 * t[i] - 1.0); // optimal y thrust at time t[i]
+        u[i*3 + 2] = 0.0;
     }
 }
 

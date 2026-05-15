@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdlib>
 #include "Controller.h"
+#include "Collocation.h"
 #include "LaminarModel.h"
 #include "Sensors.h"
 #include "Thrusters.h"
@@ -45,29 +46,89 @@ static int STALK = 4;
 const int chipSelect = 10;
 string data_string = "";
 
+Sensors sensors; // utility functions, e.g. ref frame rotations
+Thrusters thrusters; // utility functions, e.g. effective thrust inputs
+Controller controller; // sensor fusion, estimation, navigation
+DataStore datastore; // csv formatting
+LaminarModel model;
+Collocation coll;
+
+using namespace std::chrono_literals;
+auto dt1s = 1s;
+double dt = 0.0;
+double dt_stop = dt;
+
+int nav_state = DIVE;
+auto t0 = std::chrono::system_clock::now();
+auto t = t0;
+auto t_stop = t0;
+
+int i,j;
+
+double q[4];
+double r_body[3];
+double r_nav[3];
+
+double omega_body[4];
+double omega_nav[4];
+double mag_body[4];
+double mag_nav[4];
+double a_body[4];
+double a_nav[4];
+
+double latitude, longitude, speed, gps_angle;
+
+double d0 = 0.0; // previous distance [=] cm, placeholder
+double d = d0; // current distance    
+double d_stop = d;
+
+int pwm[3];
+double u[3]; // thrust: L forward/reverse, R forward/reverse, Vertical (dive/surface)
+double dt_closest = 3600.0;
+
 using namespace std;
+
+void acquire_target(double* q, double dt, double d, double* r_nav){
+    /* calculate r_nav from damped inertia
+       q: quarternion data, quat.w(), quat.x(), quat.y(), quat.z()
+       dt: time difference since r_body was acquired (start of STOP until target lost)
+       d: distance at trigger of STOP state
+       r_nav: estimate vector to target
+    */
+    // TODO:
+    // 2s velocity decay due to water drag, v(t) = v(0) * exp(-dt / tau) with tau=2s
+    r_body[0] = 1.0;
+    r_body[1] = 0.0;
+    r_body[2] = 0.0;
+
+    r_nav[0] = 0.0;
+    r_nav[1] = 0.0;
+    r_nav[2] = 0.0;
+    sensors.body_to_nav(q, r_body, r_nav);
+}
 
 int main()
 {
-    using namespace std::chrono_literals;
-    auto dt1s = 1s;
     ProfilerStart("/tmp/prof.out"); // memory profiler
-
-    Sensors sensors; // utility functions, e.g. ref frame rotations
-    Thrusters thrusters; // utility functions, e.g. effective thrust inputs
-    Controller controller; // sensor fusion, estimation, navigation
-    DataStore datastore; // csv formatting
-    LaminarModel model;
-
-    int nav_state = DIVE;
-    auto t0 = std::chrono::system_clock::now();
 
     double x[model.n_s];
     double s2[model.n_s * model.n_s];
     double z[model.n_m];
 
-    int i,j;
-    
+    // thrust setpoints
+    int n_t = 100;
+    double t_set[n_t];
+    double u_set[n_t * 3];
+    for (i=0; i<n_t; i++)
+    {
+        t_set[i] = 0.0;
+        u_set[i*3 + 0] = 0.0;
+        u_set[i*3 + 1] = 0.0;
+        u_set[i*3 + 2] = 0.0;
+    }
+
+    int idx_set;
+   
     model.init_state(x);
     model.init_covariance(s2);
     /*
@@ -80,24 +141,6 @@ int main()
     ESC.attach(9, 1000, 2000); // ESC connected to PIN 9
     */
 
-    double q[4];
-    double r_body[3];
-    double r_nav[3];
-
-    double omega_body[4];
-    double omega_nav[4];
-    double mag_body[4];
-    double mag_nav[4];
-    double a_body[4];
-    double a_nav[4];
-
-    double latitude, longitude, speed, gps_angle;
-
-    double d0 = 0.0; // previous distance [=] cm, placeholder
-    double d = 0.0; // current distance    
-
-    int pwm[3];
-    double u[3]; // thrust: L forward/reverse, R forward/reverse, Vertical (dive/surface)
     pwm[0] = 0.0;
     pwm[1] = 0.0;
     pwm[2] = 0.0;
@@ -132,18 +175,12 @@ int main()
         imu::Vector<3> accel_data = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
         imu::Vector<3> mag_data = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
         */
+
         // TODO: swap in quat data
         q[0] = 0.0; // quat.w();
         q[1] = 0.0; // quat.x();
         q[2] = 0.0; // quat.y();
         q[3] = 0.0; // quat.z();
-        r_body[0] = 1.0;
-        r_body[1] = 0.0;
-        r_body[2] = 0.0;
-        r_nav[0] = 0.0;
-        r_nav[1] = 0.0;
-        r_nav[2] = 0.0;
-        sensors.body_to_nav(q, r_body, r_nav);
 
         /* body frame sufficient for stabilization, navigation frame needed for
            fusion with GPS and fault tolerance
@@ -228,33 +265,60 @@ int main()
         // use extended Kalman filter to get best estimate for d
         // handle IMU, GPS, ultrasonic data as measurements with nonzero uncertainty
         auto t = std::chrono::system_clock::now();
-        std::chrono::duration<double> dt = t - t0;
+        dt = (t - t0) / dt1s;
 
         // TODO: fill z with sensor data
-        controller.process(dt/dt1s, x, s2, u, z);
+        controller.process(dt, x, s2, u, z);
 
-        if (d > 500){ // 600cm (20ft) operating limit
-            // resume circling surveillance
-            nav_state = SURVEILLANCE;
+        if (d < 30){
+            // abandon
+            nav_state = SURFACE;
         }
-        else {
-            if (d < 30){
-                // abandon
-                nav_state = SURFACE;
+        else if (d > 500){ // 600cm (20ft) operating limit, lost the target
+            // do we have target thrust from our collocation?
+            idx_set = n_t;
+            dt_closest = 3600.0;
+            for (i=0; i<n_t; i++)
+            {
+                if (std::abs(t_set[i] - dt_stop) < dt_closest)
+                {
+                    dt_closest = std::abs(t_set[i] - dt_stop);
+                    idx_set = i;
+                }
             }
-            else if (d > 200){
+            if (idx_set >= n_t) // if thrust profile burned, resume circling surveillance
+            {
+                nav_state = SURVEILLANCE;
+            }
+            else
+            {
+                if (nav_state == STOP)
+                {
+                    // previously stopped, damped inertia, target acquisition
+                    dt_stop = (t - t_stop) / dt1s;
+                    acquire_target(q, dt_stop, d_stop, r_nav);
+
+                    // calculate thrust profile provided vector to target, r_nav
+                    // t_set = (t_0, t_1, t_2, ..., t_nt)
+                    // u_set = (u_0, u_1, u_2, ..., u_nt) where u_0 = u[t_0] setting
+                    coll.optimal_thrust(r_nav, t_set, n_t, u_set);
+                }
                 nav_state = STALK; // close the distance
             }
-            else {
-                if (std::abs(d - d0) < 5){
-                    nav_state = STOP; // observe
-                }
-                else if (d > d0){
-                    nav_state = STALK;
-                }
-                else {
-                    nav_state = STOP;
-                }
+        }
+        else {
+            if (std::abs(d - d0) < 5){ // static target
+                nav_state = STOP; // observe
+                d_stop = d;
+                t_stop = t;
+            }
+            else if (d > d0){ // assume carry forward on current trajectory
+                nav_state = STALK;
+            }
+            else { // target approaching, update distance
+                nav_state = STOP;
+                d_stop = d;
+                t_stop = t;
             }
         }
 
@@ -279,9 +343,10 @@ int main()
             u[2] = 0.0;
         }
         else if (nav_state == STALK) {
-            u[0] = (d - d0) / (dt/dt1s) / 60 * 0.2; // account for drag, 1N ~ 60cm/s
-            u[1] = u[0];
-            u[2] = 0.0;
+            // account for drag, 1N ~ 60cm/s
+            u[0] = u_set[idx_set * 3 + 0] / dt / 60 * 0.2;
+            u[1] = u_set[idx_set * 3 + 1] / dt / 60 * 0.2;
+            u[2] = u_set[idx_set * 3 + 2] / dt / 60 * 0.2;
         }
 
         thrusters.thrust_to_pwm(u, pwm);
