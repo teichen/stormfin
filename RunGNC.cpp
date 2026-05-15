@@ -5,6 +5,9 @@ using namespace std;
 
 RunGNC::RunGNC()
 {
+    /* body frame sufficient for stabilization, navigation frame needed for
+       fusion with GPS and fault tolerance
+    */
 }
 
 void RunGNC::acquire_target(double* q, double* u, double dt, double d, double* r_nav){

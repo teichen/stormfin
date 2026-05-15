@@ -75,8 +75,7 @@ double mag_nav[4];
 double a_nav[4];
 
 double d0 = 0.0; // previous distance [=] cm, placeholder
-double d = d0; // current distance    
-double d_stop = d;
+double d_stop = d0; // stop distance
 
 int pwm[3];
 double u[3]; // thrust: L forward/reverse, R forward/reverse, Vertical (dive/surface)
@@ -140,28 +139,9 @@ int main()
                (d) target acquisition - abandon to surface
            (2) run estimation and navigation routines
            (3) adjust thrust
-
-        // first, the BNO055
-        bno.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
-        bno.getEvent(&angVelocityData, Adafruit_BNO055::VECTOR_GYROSCOPE);
-        bno.getEvent(&linearAccelData, Adafruit_BNO055::VECTOR_LINEARACCEL);
-        bno.getEvent(&magnetometerData, Adafruit_BNO055::VECTOR_MAGNETOMETER);
-        bno.getEvent(&accelerometerData, Adafruit_BNO055::VECTOR_ACCELEROMETER);
-        bno.getEvent(&gravityData, Adafruit_BNO055::VECTOR_GRAVITY);
-
-        bno.getCalibration(&system, &gyro, &accel, &mag);
-
-        imu::Quaternion quat = bno.getQuat();
-        imu::Vector<3> gyro_data = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
-        imu::Vector<3> accel_data = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
-        imu::Vector<3> mag_data = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
         */
-
         mock_data.request_data();
 
-        /* body frame sufficient for stabilization, navigation frame needed for
-           fusion with GPS and fault tolerance
-        */
         run_gnc.qrot_imu_data(mock_data.q, mock_data.omega_body, mock_data.mag_body, mock_data.a_body,
                               omega_nav, mag_nav, a_nav);
 
@@ -179,29 +159,6 @@ int main()
         z[model.mi_b_y] = mag_nav[2];
         z[model.mi_b_z] = mag_nav[3];
 
-        /*
-        // next, the IP68 UART ultrasonic sensor
-        ultrasonicSerial.begin(115200); // IP68 UART ultrasonic sensor
-
-        // first, for the IP68 UART ultrasonic sensor
-        ultrasonicSerial.write(COM);
-        if (ultrasonicSerial.available() > 0) {
-            delay(4);
-            // Look for the start byte (typically 0xFF)
-            if (ultrasonicSerial.read() == 0xFF) {
-                ultrasonic_data[0] = 0xFF;
-                for (int i = 1; i < 4; i++) {
-                    ultrasonic_data[i] = ultrasonicSerial.read();
-                }
-                // Checksum validation: (Data[0] + Data[1] + Data[2]) & 0x00FF
-                if (((ultrasonic_data[0] + ultrasonic_data[1] + ultrasonic_data[2]) & 0xFF) == ultrasonic_data[3]) {
-                    d = (ultrasonic_data[1] << 8) + ultrasonic_data[2]; // [=]mm, Combine High and Low bytes
-                }
-            }
-        }
-        */
-        sensors.ultrasonic_distance(d);
-
         // use extended Kalman filter to get best estimate for d
         // handle IMU, GPS, ultrasonic data as measurements with nonzero uncertainty
         auto t = std::chrono::system_clock::now();
@@ -209,11 +166,11 @@ int main()
 
         controller.process(dt, x, s2, u, z);
 
-        if (d < 30){
+        if (mock_data.d < 30){
             // abandon
             nav_state = SURFACE;
         }
-        else if (d > 500){ // 600cm (20ft) operating limit, lost the target
+        else if (mock_data.d > 500){ // 600cm (20ft) operating limit, lost the target
             // do we have target thrust from our collocation?
             idx_set = n_t;
             dt_closest = 3600.0;
@@ -246,17 +203,17 @@ int main()
             }
         }
         else {
-            if (std::abs(d - d0) < 5){ // static target
+            if (std::abs(mock_data.d - d0) < 5){ // static target
                 nav_state = STOP; // observe
-                d_stop = d;
+                d_stop = mock_data.d;
                 t_stop = t;
             }
-            else if (d > d0){ // assume carry forward on current trajectory
+            else if (mock_data.d > d0){ // assume carry forward on current trajectory
                 nav_state = STALK;
             }
             else { // target approaching, update distance
                 nav_state = STOP;
-                d_stop = d;
+                d_stop = mock_data.d;
                 t_stop = t;
             }
         }
@@ -295,7 +252,7 @@ int main()
         // ESC.writeMicroseconds(pwm);
         // delay(100);
 
-        d0 = d;
+        d0 = mock_data.d;
         t0 = t;
 
         /* TODO: data logging

@@ -5,6 +5,22 @@ using namespace std;
 
 MockData::MockData()
 {
+    /*
+    // first, the BNO055
+    bno.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
+    bno.getEvent(&angVelocityData, Adafruit_BNO055::VECTOR_GYROSCOPE);
+    bno.getEvent(&linearAccelData, Adafruit_BNO055::VECTOR_LINEARACCEL);
+    bno.getEvent(&magnetometerData, Adafruit_BNO055::VECTOR_MAGNETOMETER);
+    bno.getEvent(&accelerometerData, Adafruit_BNO055::VECTOR_ACCELEROMETER);
+    bno.getEvent(&gravityData, Adafruit_BNO055::VECTOR_GRAVITY);
+
+    bno.getCalibration(&system, &gyro, &accel, &mag);
+
+    imu::Quaternion quat = bno.getQuat();
+    imu::Vector<3> gyro_data = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+    imu::Vector<3> accel_data = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
+    imu::Vector<3> mag_data = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
+    */
 }
 
 void MockData::request_data(void)
@@ -39,6 +55,30 @@ void MockData::request_data(void)
     longitude = 0.0;
     speed = 0.0;
     gps_angle = 0.0;
+
+    /*
+    // next, the IP68 UART ultrasonic sensor
+    ultrasonicSerial.begin(115200); // IP68 UART ultrasonic sensor
+
+    // first, for the IP68 UART ultrasonic sensor
+    ultrasonicSerial.write(COM);
+    if (ultrasonicSerial.available() > 0) {
+        delay(4);
+        // Look for the start byte (typically 0xFF)
+        if (ultrasonicSerial.read() == 0xFF) {
+            ultrasonic_data[0] = 0xFF;
+            for (int i = 1; i < 4; i++) {
+                ultrasonic_data[i] = ultrasonicSerial.read();
+            }
+            // Checksum validation: (Data[0] + Data[1] + Data[2]) & 0x00FF
+            if (((ultrasonic_data[0] + ultrasonic_data[1] + ultrasonic_data[2]) & 0xFF) == ultrasonic_data[3]) {
+                d = (ultrasonic_data[1] << 8) + ultrasonic_data[2]; // [=]mm, Combine High and Low bytes
+            }
+        }
+    }
+    */
+    d = 0.0; // placeholder, current distance    
+    sensors.ultrasonic_distance(d);
 }
 
 MockData::~MockData()
