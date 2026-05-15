@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdlib>
 #include "RunGNC.h"
+#include "MockData.h"
 #include "Controller.h"
 #include "Collocation.h"
 #include "LaminarModel.h"
@@ -54,6 +55,7 @@ Controller controller; // sensor fusion, estimation, navigation
 DataStore datastore; // csv formatting
 LaminarModel model;
 Collocation coll;
+MockData mock_data;
 
 using namespace std::chrono_literals;
 auto dt1s = 1s;
@@ -67,17 +69,10 @@ auto t_stop = t0;
 
 int i,j;
 
-double q[4];
 double r_nav[3];
-
-double omega_body[4];
 double omega_nav[4];
-double mag_body[4];
 double mag_nav[4];
-double a_body[4];
 double a_nav[4];
-
-double latitude, longitude, speed, gps_angle;
 
 double d0 = 0.0; // previous distance [=] cm, placeholder
 double d = d0; // current distance    
@@ -162,41 +157,13 @@ int main()
         imu::Vector<3> mag_data = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
         */
 
-        // TODO: swap in quat data
-        q[0] = 0.0; // quat.w();
-        q[1] = 0.0; // quat.x();
-        q[2] = 0.0; // quat.y();
-        q[3] = 0.0; // quat.z();
-
-        // TODO: swap in gyro_data, [=] radians / s
-        omega_body[0] = 0.0;
-        omega_body[1] = 1.0; // gyro_data[0];
-        omega_body[2] = 0.0; // gyro_data[1];
-        omega_body[3] = 0.0; // gyro_data[2];
-
-        mag_body[0] = 0.0;
-        mag_body[1] = 0.1; // mag_data[0]
-        mag_body[2] = 0.1; // mag_data[1]
-        mag_body[3] = 0.1; // mag_data[2]
-
-        // tether to GPS buoy should minimize tilt, use linear acceleration (no gravity)
-        // to avoid interpreting tilt as xy movement
-        // TODO: swap in accel_data, [=] m / s**2
-        a_body[0] = 0.0;
-        a_body[1] = 0.0; // accel_data[0]
-        a_body[2] = 0.5; // accel_data[1]
-        a_body[3] = 0.0; // accel_data[2]
+        mock_data.request_data();
 
         /* body frame sufficient for stabilization, navigation frame needed for
            fusion with GPS and fault tolerance
         */
-        run_gnc.qrot_imu_data(q, omega_body, mag_body, a_body, omega_nav, mag_nav, a_nav);
-
-        // TODO: get GPS data
-        latitude = 0.0;
-        longitude = 0.0;
-        speed = 0.0;
-        gps_angle = 0.0;
+        run_gnc.qrot_imu_data(mock_data.q, mock_data.omega_body, mock_data.mag_body, mock_data.a_body,
+                              omega_nav, mag_nav, a_nav);
 
         z[model.mi_omega_x] = omega_nav[1];
         z[model.mi_omega_y] = omega_nav[2];
@@ -204,10 +171,10 @@ int main()
         z[model.mi_a_x] = a_nav[1];
         z[model.mi_a_y] = a_nav[2];
         z[model.mi_a_z] = a_nav[3];
-        z[model.mi_x] = longitude;
-        z[model.mi_y] = latitude;
-        z[model.mi_v_x] = speed * std::cos(gps_angle);
-        z[model.mi_v_y] = speed * std::sin(gps_angle);
+        z[model.mi_x] = mock_data.longitude;
+        z[model.mi_y] = mock_data.latitude;
+        z[model.mi_v_x] = mock_data.speed * std::cos(mock_data.gps_angle);
+        z[model.mi_v_y] = mock_data.speed * std::sin(mock_data.gps_angle);
         z[model.mi_b_x] = mag_nav[1];
         z[model.mi_b_y] = mag_nav[2];
         z[model.mi_b_z] = mag_nav[3];
@@ -268,7 +235,7 @@ int main()
                 {
                     // previously stopped, damped inertia, target acquisition
                     dt_stop = (t - t_stop) / dt1s;
-                    run_gnc.acquire_target(q, u_saved, dt_stop, d_stop, r_nav);
+                    run_gnc.acquire_target(mock_data.q, u_saved, dt_stop, d_stop, r_nav);
 
                     // calculate thrust profile provided vector to target, r_nav
                     // t_set = (t_0, t_1, t_2, ..., t_nt)
