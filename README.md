@@ -20,7 +20,7 @@ Embedded EKF would require STM32H7 (for example), CMSIS-DSP library, etc. \
 Arduino Due (84MHz 32-bit ARM Cortex-M3 processor, 96KB SRAM) would struggle with EKF \
 Acoustic modem (design described below)
 
-## ChibComm microcontroller amd cp,,s
+## ChibComm microcontroller and comms
 Raspberry Pi (3) Model B+ \
 WhatsApp for communication with shoreline \
 Acoustic modem (design described below) \
