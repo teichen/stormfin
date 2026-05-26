@@ -64,15 +64,15 @@ GNU Radio for signal processing (freq shift keying and phase shift keying)
 ```mermaid
 flowchart TD
     A[transducer PZT] --> B[transceiver]
-    B -- C[transmitter]
-    B -- D[receiver]
-    C -- E(precondition with differential Op-Amp)
-    C -- F(Controller/Comparitor LM311)
-    C -- G(Class AB amplifier, low noise high resolution)
-    C -- H(Class D amplifier, high power long range)
-    D -- I(high impedance buffer)
-    D -- J(low pass active Sallen-Key filter)
-    D -- K(high pass active Sallen-Key filter)
+    B --- C[transmitter]
+    B --- D[receiver]
+    C --- E(precondition with differential Op-Amp)
+    C --- F(Controller/Comparitor LM311)
+    C --- G(Class AB amplifier, low noise high resolution)
+    C --- H(Class D amplifier, high power long range)
+    D --- I(high impedance buffer)
+    D --- J(low pass active Sallen-Key filter)
+    D --- K(high pass active Sallen-Key filter)
 ```
 
 ## software overview
