@@ -1,10 +1,12 @@
 # StormFin
 underactuated fish finder
+
 # ChibbComm
 raspberry pi land communicator and StormFin controller
 
 ## motivation
 avoiding $1500+ Garbin LiveScope Plus \
+avoiding $2000+ per acoustic modem \
 current state of the art is forward facing sonar \
 steerable transducer on trolling motor, 20 deg sonar beam, 100 ft range \
 proposal - AUV tracking
@@ -12,10 +14,19 @@ proposal - AUV tracking
 ![prototyping0](1000008055.jpg)
 ![prototyping1](1000008054.jpg)
 
-## microcontroller board
+## StormFin microcontroller and comms
 Adafruit METRO 328 / Arduino Nano Complementary Filtering on-board \
 Embedded EKF would require STM32H7 (for example), CMSIS-DSP library, etc. \
 Arduino Due (84MHz 32-bit ARM Cortex-M3 processor, 96KB SRAM) would struggle with EKF \
+Acoustic modem (design described below)
+
+## ChibComm microcontroller amd cp,,s
+Raspberry Pi (3) Model B+ \
+WhatsApp for communication with shoreline \
+Acoustic modem (design described below) \
+GNU Radio for signal processing (freq shift keying and phase shift keying)
+
+## design sketch
 
 ## bill of materials
     1. SP17 IP68 10 pin waterproof connectors
@@ -31,6 +42,12 @@ Arduino Due (84MHz 32-bit ARM Cortex-M3 processor, 96KB SRAM) would struggle wit
     11. Raspberry Pi Model B+
     12. UBEC DC/DC Step-Down (Buck) Converter - 5V @ 3A output
     13. B6AC 80W Balance Charger
+    14. JLI PZ001 cylindircal ceramic pizeo electric transducer
+    15. Differential Op-Amp
+    16. LM311 Comparitor
+    17. Class AB+D Amplifier
+    18. JLI P48 Hi Z high impedance buffer (includes OPA1642 dual JFET amplifier embedded)
+    19. bandpass (Sallen-Key) filter
 
 ## powering/wiring StormFin and ChibbComm
     1. 11.1V 2.2A 25C LiPo battery (a) provides 610W continuous - two A2212 930KV motors draw 150W each
@@ -42,6 +59,21 @@ Arduino Due (84MHz 32-bit ARM Cortex-M3 processor, 96KB SRAM) would struggle wit
     7. LiPo to buck converter - 14 AWG silicon insulated stranded tinned copper
     8. LiPo to 12V camera - 14 AWG silicon insulated stranded tinned copper
     9. ChibbComm 12 camera draws 30W
+
+## acoustic modem
+```mermaid
+flowchart TD
+    A[transducer (PZT)] --> B[transceiver]
+    B -- C[transmitter]
+    B -- D[receiver]
+    C -- E[precondition with differential Op-Amp]
+    C -- F[Controller/Comparitor LM311]
+    C -- G[Class AB amplifier (low noise high resolution)]
+    C -- H[Class D amplifier (high power long range)]
+    D -- I[high impedance buffer]
+    D -- J[low pass (active) Sallen-Key filter]
+    D -- K[high pass (active) Sallen-Key filter]
+```
 
 ## software overview
 ```mermaid
