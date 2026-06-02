@@ -14,6 +14,7 @@ public:
 
     GSLWrappers();
 
+    void fft(double*, double*, int);
     void matrix_exponential(double*, int, double*);
     void matrix_inv(double*, int, int, double*);
     void matrix_mult(double*, int, int, double*, int, int, double*, int, int);

@@ -8,11 +8,25 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv2.h>
 #include <gsl/gsl_mode.h>
+#include <gsl/gsl_fft_complex.h>
 
 using namespace std;
 
 GSLWrappers::GSLWrappers()
 {
+}
+
+void GSLWrappers::fft(double* x, double* y, int n)
+{
+    /* in-place forward FFT
+       double x[2 * N]: Re(0), Im(0), Re(1), Im(1)...
+    */
+    int i;
+    for (i=0; i<(2*n); i++)
+    {
+        y[i] = x[i];
+    }
+    gsl_fft_complex_radix2_forward(y, 1, n);
 }
 
 void GSLWrappers::matrix_inv(double* a, int n_a0, int n_a1, double* a_inv)

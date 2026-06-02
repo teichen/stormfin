@@ -122,5 +122,33 @@ int main()
         }
     }
 
+    // TEST-5 : fft test
+    int n = 128; // number of data points
+    double a_t[2*n]; // acoustic time signal
+    double a_w[2*n];
+    double f_test = 10.0; // Hz
+    double f_sampling = 128.0; // Hz, f_sampling points per second
+    for (i=0; i<n; i++)
+    {
+        a_t[2*i + 0] = std::sin(2.0 * PI * f_test * i / f_sampling);
+        a_t[2*i + 1] = 0.0;
+    }
+    gsl.fft(a_t, a_w, n);
+
+    double a_w_mag;
+
+    for (i=0; i<(int)(n/2); i++)
+    {
+        a_w_mag = std::sqrt(a_w[2*i + 0] * a_w[2*i + 0] + a_w[2*i + 1] * a_w[2*i + 1]);
+        if (std::abs((double)(i * f_sampling / n) - f_test) < 0.1)
+        {
+            assert(a_w_mag > 1.0e-5);
+        }
+        else
+        {
+            assert(a_w_mag < 1.0e-12);
+        }
+    }
+
     return 0;
 }
