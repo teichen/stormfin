@@ -12,7 +12,7 @@ public:
 
     Acoustics();
 
-    void fft(double*, double*, int);
+    void goertzel_dtft(double*, double*, int);
 
     ~Acoustics();
 
