@@ -11,20 +11,22 @@ current state of the art is forward facing sonar \
 steerable transducer on trolling motor, 20 deg sonar beam, 100 ft range \
 proposal - AUV tracking
 
-![prototyping0](1000008055.jpg)
-![prototyping1](1000008054.jpg)
-
 ## StormFin microcontroller and comms
 Adafruit METRO 328 / Arduino Nano Complementary Filtering on-board \
 Embedded EKF would require STM32H7 (for example), CMSIS-DSP library, etc. \
 Arduino Due (84MHz 32-bit ARM Cortex-M3 processor, 96KB SRAM) would struggle with EKF \
 Acoustic modem (design described below)
 
+![prototyping1](1000008163.jpg)
+![prototyping0](1000008154.jpg)
+
 ## ChibComm microcontroller and comms
 Raspberry Pi (3) Model B+ \
 WhatsApp for communication with shoreline \
 Acoustic modem (design described below) \
 GNU Radio for signal processing (freq shift keying and phase shift keying)
+
+![prototyping1](1000008164.jpg)
 
 ## design sketch
 
