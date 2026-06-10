@@ -50,6 +50,7 @@ GNU Radio for signal processing (freq shift keying and phase shift keying)
     17. Class AB+D Amplifier
     18. JLI P48 Hi Z high impedance buffer (includes OPA1642 dual JFET amplifier embedded)
     19. bandpass (Sallen-Key) filter
+    20. MCP3008 Analog-to-Digital Converter (ADC)
 
 ## powering/wiring StormFin and ChibbComm
     1. 11.1V 2.2A 25C LiPo battery (a) provides 610W continuous - two A2212 930KV motors draw 150W each

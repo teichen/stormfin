@@ -7,6 +7,7 @@
 #include "Collocation.h"
 #include "LaminarModel.h"
 #include "Sensors.h"
+#include "Acoustics.h"
 #include "Thrusters.h"
 #include "DataStore.h"
 #include <gperftools/profiler.h>
@@ -37,6 +38,16 @@ SoftwareSerial ultrasonicSerial(2, 3); // IP68 UART ultrasonic
 unsigned char ultrasonic_data[4];
 
 Servo ESC;
+
+const int CSPin = 10;          // MCP3008 Chip Select Pin
+
+// Digital Bandpass Filter variables
+// exponential moving average parameterization
+float EMA_a_low = 0.3;         // Low-pass filter alpha (adjust for upper cutoff)
+float EMA_a_high = 0.5;        // High-pass filter alpha (adjust for lower cutoff)
+int EMA_S_low = 0;             // Low-pass filter state
+int EMA_S_high = 0;            // High-pass filter state
+
 */
 
 static int STOP = 0;
@@ -57,6 +68,7 @@ DataStore datastore; // csv formatting
 LaminarModel model;
 Collocation coll;
 MockData mock_data;
+Acoustics acoustics;
 
 using namespace std::chrono_literals;
 auto dt1s = 1s;
@@ -84,6 +96,32 @@ double u_saved[3];
 double dt_closest = 3600.0;
 
 using namespace std;
+
+/*
+// Function to read a specific channel (0-7) from MCP3008
+int readMCP3008(int channel) {
+    int adcValue = 0;
+
+    // Configure SPI communication settings
+    SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+
+    digitalWrite(CSPin, LOW); // Select MCP3008
+
+    // Send start bit + single-ended bit + channel config (bits 3-0)
+    SPI.transfer(0x01); // Start bit
+    byte commandBytes = ((channel + 8) << 4);
+    byte msb = SPI.transfer(commandBytes);
+    byte lsb = SPI.transfer(0x00);
+
+    digitalWrite(CSPin, HIGH); // Deselect MCP3008
+    SPI.endTransaction();
+
+    // Combine the response bits into a 10-bit integer
+    adcValue = ((msb & 0x03) << 8) | lsb;
+
+    return adcValue;
+}
+*/
 
 int main()
 {
@@ -117,6 +155,19 @@ int main()
     uint8_t system, gyro, accel, mag = 0;
 
     ESC.attach(9, 1000, 2000); // ESC connected to PIN 9
+
+    // MCP3008 ADC and SPI
+    // acoustic signal from a piezoelectric element alternates between positive and negative voltages
+    // high-impedance buffer circuit applies a DC bias and raises the AC waveform so it never drops below 0V
+    pinMode(CSPin, OUTPUT);
+    digitalWrite(CSPin, HIGH);   // Disable device initially
+    SPI.begin();
+    Serial.begin(115200);
+
+    // Initialize filter states with first reading
+    int initialReading = readMCP3008(0);
+    EMA_S_low = initialReading;
+    EMA_S_high = initialReading;
     */
     pwm[0] = 0.0;
     pwm[1] = 0.0;
@@ -131,6 +182,7 @@ int main()
     // arduino loop()
     while (true) {
         /*
+           (0) process acoustic data
            (1) process sensor data
            (2) determine operating state
                (a) ROV manual
@@ -140,6 +192,18 @@ int main()
            (2) run estimation and navigation routines
            (3) adjust thrust
         */
+
+        /* (0) process acoustic data
+        int rawValue = readMCP3008(0); // Read acoustic signal from CH0
+
+        // Bandpass implementation (Subtract Low-pass from High-pass)
+        EMA_S_low = (EMA_a_low * rawValue) + ((1 - EMA_a_low) * EMA_S_low);
+        EMA_S_high = (EMA_a_high * rawValue) + ((1 - EMA_a_high) * EMA_S_high);
+
+        int bandpassResult = EMA_S_high - EMA_S_low;
+        */
+
+        // (1) process sensor data
         mock_data.request_data(nav_state);
 
         run_gnc.qrot_imu_data(mock_data.q, mock_data.omega_body, mock_data.mag_body, mock_data.a_body,
