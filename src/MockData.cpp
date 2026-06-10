@@ -1,6 +1,13 @@
 #include <stdlib.h>
 #include "MockData.h"
 
+static int STOP = 0;
+static int DIVE = 1;
+static int SURFACE = 2;
+static int SURVEILLANCE = 3;
+static int STALK = 4;
+static int COMMUNICATE = 5;
+
 using namespace std;
 
 MockData::MockData()
@@ -23,7 +30,7 @@ MockData::MockData()
     */
 }
 
-void MockData::request_data(void)
+void MockData::request_data(int nav_state)
 {
     // TODO: swap in quat data
     q[0] = 0.0; // quat.w();
@@ -50,33 +57,48 @@ void MockData::request_data(void)
     a_body[2] = 0.5; // accel_data[1]
     a_body[3] = 0.0; // accel_data[2]
 
+    if (nav_state == SURFACE)
+    {
+        // GPS available
+    }
+    else
+    {
+        // GPS-denied conditions
+    }
     // TODO: get GPS data
     latitude = 0.0;
     longitude = 0.0;
     speed = 0.0;
     gps_angle = 0.0;
 
-    /*
-    // next, the IP68 UART ultrasonic sensor
-    ultrasonicSerial.begin(115200); // IP68 UART ultrasonic sensor
+    if (nav_state != COMMUNICATE) // forward facing narrow beam only when not communicating
+    {
+        /*
+        // next, the IP68 UART ultrasonic sensor
+        ultrasonicSerial.begin(115200); // IP68 UART ultrasonic sensor
 
-    // first, for the IP68 UART ultrasonic sensor
-    ultrasonicSerial.write(COM);
-    if (ultrasonicSerial.available() > 0) {
-        delay(4);
-        // Look for the start byte (typically 0xFF)
-        if (ultrasonicSerial.read() == 0xFF) {
-            ultrasonic_data[0] = 0xFF;
-            for (int i = 1; i < 4; i++) {
-                ultrasonic_data[i] = ultrasonicSerial.read();
-            }
-            // Checksum validation: (Data[0] + Data[1] + Data[2]) & 0x00FF
-            if (((ultrasonic_data[0] + ultrasonic_data[1] + ultrasonic_data[2]) & 0xFF) == ultrasonic_data[3]) {
-                d = (ultrasonic_data[1] << 8) + ultrasonic_data[2]; // [=]mm, Combine High and Low bytes
+        // first, for the IP68 UART ultrasonic sensor
+        ultrasonicSerial.write(COM);
+        if (ultrasonicSerial.available() > 0) {
+            delay(4);
+            // Look for the start byte (typically 0xFF)
+            if (ultrasonicSerial.read() == 0xFF) {
+                ultrasonic_data[0] = 0xFF;
+                for (int i = 1; i < 4; i++) {
+                    ultrasonic_data[i] = ultrasonicSerial.read();
+                }
+                // Checksum validation: (Data[0] + Data[1] + Data[2]) & 0x00FF
+                if (((ultrasonic_data[0] + ultrasonic_data[1] + ultrasonic_data[2]) & 0xFF) == ultrasonic_data[3]) {
+                    d = (ultrasonic_data[1] << 8) + ultrasonic_data[2]; // [=]mm, Combine High and Low bytes
+                }
             }
         }
+        */
     }
-    */
+    else
+    {
+        // acoustic modem communication halt forward facing narrow beam
+    }
     d = 0.0; // placeholder, current distance    
     sensors.ultrasonic_distance(d);
 }

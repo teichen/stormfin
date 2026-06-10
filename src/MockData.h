@@ -13,7 +13,7 @@ public:
 
     Sensors sensors;
 
-    void request_data(void);
+    void request_data(int);
     double d;
     double q[4];
     double omega_body[4];

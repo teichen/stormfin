@@ -44,6 +44,7 @@ static int DIVE = 1;
 static int SURFACE = 2;
 static int SURVEILLANCE = 3;
 static int STALK = 4;
+static int COMMUNICATE = 5;
 
 const int chipSelect = 10;
 string data_string = "";
@@ -139,7 +140,7 @@ int main()
            (2) run estimation and navigation routines
            (3) adjust thrust
         */
-        mock_data.request_data();
+        mock_data.request_data(nav_state);
 
         run_gnc.qrot_imu_data(mock_data.q, mock_data.omega_body, mock_data.mag_body, mock_data.a_body,
                               omega_nav, mag_nav, a_nav);
@@ -164,6 +165,8 @@ int main()
         dt = (t - t0) / dt1s;
 
         controller.process(dt, x, s2, u, z);
+
+        // TODO: nav_state = COMMUNICATE temporarily during events such as collision, target loss
 
         if (mock_data.d < 30){
             // abandon
