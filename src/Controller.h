@@ -6,6 +6,7 @@
 #include "KalmanFilter.h"
 #include "ComplementaryFilter.h"
 #include "Collocation.h"
+#include "Sensors.h"
 
 #include <iostream>
 
@@ -22,7 +23,10 @@ public:
     ComplementaryFilter cf;
     Collocation collocation;
 
-    void process(double, double*, double*, double*, double*);
+    void process_data(double, double*, double*, double*, double*);
+    Sensors sensors; // utility functions, e.g. ref frame rotations
+    void acquire_target(double*, double*, double, double, double*);
+    void qrot_imu_data(double*, double*, double*, double*, double*, double*, double*);
 
     ~Controller();
 

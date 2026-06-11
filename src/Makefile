@@ -6,7 +6,7 @@ SHELL = /bin/sh
 
 CHIBB_OBJS = ChibbComm.o
 
-STORMFIN_OBJS = StormFin.o RunGNC.o MockData.o Controller.o DataStore.o KalmanFilter.o ComplementaryFilter.o Utilities.o GSLWrappers.o Acoustics.o Sensors.o Thrusters.o LaminarModel.o Collocation.o
+STORMFIN_OBJS = StormFin.o MockData.o Controller.o DataStore.o KalmanFilter.o ComplementaryFilter.o Utilities.o GSLWrappers.o Acoustics.o Sensors.o Thrusters.o LaminarModel.o Collocation.o
 
 CFLAGS = -g -O0
 CC = clang++

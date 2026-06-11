@@ -1,7 +1,6 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
-#include "RunGNC.h"
 #include "MockData.h"
 #include "Controller.h"
 #include "Collocation.h"
@@ -60,7 +59,6 @@ static int COMMUNICATE = 5;
 const int chipSelect = 10;
 string data_string = "";
 
-RunGNC run_gnc; // run methods
 Sensors sensors; // utility functions, e.g. ref frame rotations
 Thrusters thrusters; // utility functions, e.g. effective thrust inputs
 Controller controller; // sensor fusion, estimation, navigation
@@ -220,7 +218,7 @@ int main()
         // (1) process sensor data
         mock_data.request_data(nav_state);
 
-        run_gnc.qrot_imu_data(mock_data.q, mock_data.omega_body, mock_data.mag_body, mock_data.a_body,
+        controller.qrot_imu_data(mock_data.q, mock_data.omega_body, mock_data.mag_body, mock_data.a_body,
                               omega_nav, mag_nav, a_nav);
 
         z[model.mi_omega_x] = omega_nav[1];
@@ -242,7 +240,7 @@ int main()
         auto t = std::chrono::system_clock::now();
         dt = (t - t0) / dt1s;
 
-        controller.process(dt, x, s2, u, z);
+        controller.process_data(dt, x, s2, u, z);
 
         dt_dive = (t - t_surface) / dt1s; // time since last surface
         dt_surface = (t - t_dive) / dt1s; // time since last dive
@@ -303,7 +301,7 @@ int main()
                     {
                         // previously stopped, damped inertia, target acquisition
                         dt_stop = (t - t_stop) / dt1s;
-                        run_gnc.acquire_target(mock_data.q, u_saved, dt_stop, d_stop, r_nav);
+                        controller.acquire_target(mock_data.q, u_saved, dt_stop, d_stop, r_nav);
 
                         // calculate thrust profile provided vector to target, r_nav
                         // t_set = (t_0, t_1, t_2, ..., t_nt)
