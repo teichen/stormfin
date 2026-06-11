@@ -32,31 +32,6 @@ MockData::MockData()
 
 void MockData::request_data(int nav_state)
 {
-    // TODO: swap in quat data
-    q[0] = 0.0; // quat.w();
-    q[1] = 0.0; // quat.x();
-    q[2] = 0.0; // quat.y();
-    q[3] = 0.0; // quat.z();
-
-    // TODO: swap in gyro_data, [=] radians / s
-    omega_body[0] = 0.0;
-    omega_body[1] = 1.0; // gyro_data[0];
-    omega_body[2] = 0.0; // gyro_data[1];
-    omega_body[3] = 0.0; // gyro_data[2];
-
-    mag_body[0] = 0.0;
-    mag_body[1] = 0.1; // mag_data[0]
-    mag_body[2] = 0.1; // mag_data[1]
-    mag_body[3] = 0.1; // mag_data[2]
-
-    // tether to GPS buoy should minimize tilt, use linear acceleration (no gravity)
-    // to avoid interpreting tilt as xy movement
-    // TODO: swap in accel_data, [=] m / s**2
-    a_body[0] = 0.0;
-    a_body[1] = 0.0; // accel_data[0]
-    a_body[2] = 0.5; // accel_data[1]
-    a_body[3] = 0.0; // accel_data[2]
-
     if (nav_state == SURFACE)
     {
         // GPS available
@@ -73,6 +48,31 @@ void MockData::request_data(int nav_state)
 
     if (nav_state != COMMUNICATE) // forward facing narrow beam only when not communicating
     {
+        // TODO: swap in quat data
+        q[0] = 0.0; // quat.w();
+        q[1] = 0.0; // quat.x();
+        q[2] = 0.0; // quat.y();
+        q[3] = 0.0; // quat.z();
+
+        // TODO: swap in gyro_data, [=] radians / s
+        omega_body[0] = 0.0;
+        omega_body[1] = 1.0; // gyro_data[0];
+        omega_body[2] = 0.0; // gyro_data[1];
+        omega_body[3] = 0.0; // gyro_data[2];
+
+        mag_body[0] = 0.0;
+        mag_body[1] = 0.1; // mag_data[0]
+        mag_body[2] = 0.1; // mag_data[1]
+        mag_body[3] = 0.1; // mag_data[2]
+
+        // tether to GPS buoy should minimize tilt, use linear acceleration (no gravity)
+        // to avoid interpreting tilt as xy movement
+        // TODO: swap in accel_data, [=] m / s**2
+        a_body[0] = 0.0;
+        a_body[1] = 0.0; // accel_data[0]
+        a_body[2] = 0.5; // accel_data[1]
+        a_body[3] = 0.0; // accel_data[2]
+
         /*
         // next, the IP68 UART ultrasonic sensor
         ultrasonicSerial.begin(115200); // IP68 UART ultrasonic sensor
@@ -97,7 +97,7 @@ void MockData::request_data(int nav_state)
     }
     else
     {
-        // acoustic modem communication halt forward facing narrow beam
+        // acoustic modem communication interferes with ultrasonic sensor and IMU
     }
     d = 0.0; // placeholder, current distance    
     sensors.ultrasonic_distance(d);
