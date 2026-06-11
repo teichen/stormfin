@@ -14,6 +14,8 @@ static int COMMUNICATE = 5;
 using namespace std;
 using namespace std::chrono_literals; 
 
+using SystemTimePoint = std::chrono::system_clock::time_point;
+
 static string filter_type = "on-board"; // on-board: ComplementaryFilter, off-board: KalmanFilter
 static auto dt1s = 1s;
 
@@ -51,10 +53,10 @@ void Controller::process_data(double dt, double* x, double* s2, double* thrust, 
     }
 }
 
-void Controller::update_nav_state(int nav_state, auto t, auto t_comms_off, auto t_comms_on,
-                                 auto t_surface, auto t_dive, double d, double* q,
+void Controller::update_nav_state(int nav_state, SystemTimePoint t, SystemTimePoint t_comms_off, SystemTimePoint t_comms_on,
+                                 SystemTimePoint t_surface, SystemTimePoint t_dive, double d, double* q,
                                  int idx_set, double* t_set, int n_t, double* u_set,
-                                 double* u_saved, double d_stop, auto t_stop, double d0)
+                                 double* u_saved, double d_stop, SystemTimePoint t_stop, double d0)
 {
     double dt_surface = 0.0;
     double dt_dive = 0.0;

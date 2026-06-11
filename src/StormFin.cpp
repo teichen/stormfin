@@ -69,18 +69,20 @@ MockData mock_data;
 Acoustics acoustics;
 
 using namespace std::chrono_literals;
+using SystemTimePoint = std::chrono::system_clock::time_point;
+
 auto dt1s = 1s;
 double dt = 0.0;
 
 int nav_state = DIVE;
-auto t0 = std::chrono::system_clock::now();
-auto t = t0;
-auto t_stop = t0;
+SystemTimePoint t0 = std::chrono::system_clock::now();
+SystemTimePoint t = t0;
+SystemTimePoint t_stop = t0;
 
-auto t_dive = t0;
-auto t_surface = t0;
-auto t_comms_off = t0;
-auto t_comms_on = t0;
+SystemTimePoint t_dive = t0;
+SystemTimePoint t_surface = t0;
+SystemTimePoint t_comms_off = t0;
+SystemTimePoint t_comms_on = t0;
 
 int i,j;
 
@@ -225,7 +227,7 @@ int main()
 
         // use extended Kalman filter to get best estimate for d
         // handle IMU, GPS, ultrasonic data as measurements with nonzero uncertainty
-        auto t = std::chrono::system_clock::now();
+        SystemTimePoint t = std::chrono::system_clock::now();
         dt = (t - t0) / dt1s;
 
         controller.process_data(dt, x, s2, u, z);
