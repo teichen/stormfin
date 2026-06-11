@@ -71,30 +71,19 @@ Acoustics acoustics;
 using namespace std::chrono_literals;
 auto dt1s = 1s;
 double dt = 0.0;
-double dt_stop = dt;
 
 int nav_state = DIVE;
 auto t0 = std::chrono::system_clock::now();
 auto t = t0;
 auto t_stop = t0;
 
-double dive_period = 50.0 * 60.0; // 5 min survey period
-double surface_period = 1.0 * 60.0; // 1 min GPS collection at surface
 auto t_dive = t0;
 auto t_surface = t0;
-double dt_surface = 0.0;
-double dt_dive = 0.0;
-
-double comms_off_period = 2.0 * 60.0; // 2 min acoustic signal silence, comms prioritized over surfacing
-double comms_on_period = 30.0; // 30 second acoustic communication period
 auto t_comms_off = t0;
 auto t_comms_on = t0;
-double dt_comms_off = 0.0;
-double dt_comms_on = 0.0;
 
 int i,j;
 
-double r_nav[3];
 double omega_nav[4];
 double mag_nav[4];
 double a_nav[4];
@@ -105,7 +94,6 @@ double d_stop = d0; // stop distance
 int pwm[3];
 double u[3]; // thrust: L forward/reverse, R forward/reverse, Vertical (dive/surface)
 double u_saved[3];
-double dt_closest = 3600.0;
 
 using namespace std;
 
@@ -242,91 +230,9 @@ int main()
 
         controller.process_data(dt, x, s2, u, z);
 
-        dt_dive = (t - t_surface) / dt1s; // time since last surface
-        dt_surface = (t - t_dive) / dt1s; // time since last dive
-
-        dt_comms_off = (t - t_comms_off) / dt1s; // time since stop of last communication
-        dt_comms_on = (t - t_comms_on) / dt1s; // time since start of communication
-
-        if (nav_state == COMMUNICATE) // fixed communication period
-        {
-            if (dt_comms_on > comms_on_period)
-            {
-                nav_state = SURVEILLANCE; // resume navigation
-                t_comms_off = t;
-            }
-        }
-        if (dt_comms_off > comms_off_period) // regularized communication
-        {
-            nav_state = COMMUNICATE;
-            t_comms_on = t;
-        }
-        else if (dt_dive > dive_period) // regularized surfacing
-        {
-            nav_state = SURFACE;
-            t_surface = t;
-        }
-        else if (dt_surface > surface_period) // regularized diving
-        {
-            nav_state = DIVE;
-            t_dive = t;
-        }
-        else
-        {
-            if (mock_data.d < 30){
-                // abandon
-                nav_state = SURFACE;
-
-                // TODO: communicate during events such as collision
-            }
-            else if (mock_data.d > 500){ // 600cm (20ft) operating limit, lost the target
-                // do we have target thrust from our collocation?
-                idx_set = n_t;
-                dt_closest = 3600.0;
-                for (i=0; i<n_t; i++)
-                {
-                    if (std::abs(t_set[i] - dt_stop) < dt_closest)
-                    {
-                        dt_closest = std::abs(t_set[i] - dt_stop);
-                        idx_set = i;
-                    }
-                }
-                if (idx_set >= n_t) // if thrust profile burned, resume circling surveillance
-                {
-                    nav_state = SURVEILLANCE;
-                }
-                else
-                {
-                    if (nav_state == STOP)
-                    {
-                        // previously stopped, damped inertia, target acquisition
-                        dt_stop = (t - t_stop) / dt1s;
-                        controller.acquire_target(mock_data.q, u_saved, dt_stop, d_stop, r_nav);
-
-                        // calculate thrust profile provided vector to target, r_nav
-                        // t_set = (t_0, t_1, t_2, ..., t_nt)
-                        // u_set = (u_0, u_1, u_2, ..., u_nt) where u_0 = u[t_0] setting
-                        coll.optimal_thrust(r_nav, t_set, n_t, u_set);
-                    }
-                    nav_state = STALK; // close the distance
-                }
-            }
-            else {
-                if (std::abs(mock_data.d - d0) < 5){ // static target
-                    nav_state = STOP; // observe
-                    d_stop = mock_data.d;
-                    t_stop = t;
-                }
-                else if (mock_data.d > d0){ // assume carry forward on current trajectory
-                    nav_state = STALK;
-                }
-                else { // target approaching, update distance
-                    nav_state = STOP;
-                    d_stop = mock_data.d;
-                    t_stop = t;
-                }
-            }
-        }
+        controller.update_nav_state(nav_state, t, t_comms_off, t_comms_on, t_surface, t_dive,
+                                    mock_data.d, mock_data.q, idx_set, t_set, n_t, u_set, u_saved,
+                                    d_stop, t_stop, d0);
 
         thrusters.thrust_state(nav_state, u_set, idx_set, u);
         if (nav_state == STOP){
