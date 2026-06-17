@@ -26,7 +26,7 @@ WhatsApp for communication with shoreline \
 Acoustic modem (design described below) \
 GNU Radio for signal processing (freq shift keying and phase shift keying)
 
-![prototyping1](1000008164.jpg)
+![prototyping2](1000008164.jpg)
 
 ## design sketch
 
@@ -77,6 +77,8 @@ flowchart TD
     D --- J(low pass active Sallen-Key filter)
     D --- K(high pass active Sallen-Key filter)
 ```
+![prototyping3](receive_circuit.pdf)
+![prototyping4](transmit_circuit.pdf)
 
 ## software overview
 ```mermaid
