@@ -77,8 +77,12 @@ flowchart TD
     D --- J(low pass active Sallen-Key filter)
     D --- K(high pass active Sallen-Key filter)
 ```
-![prototyping3](receive_circuit.pdf)
-![prototyping4](transmit_circuit.pdf)
+<object data="receive_circuit.pdf" type="application/pdf" width="100%" height="500px">
+    <p>Your browser does not support inline PDFs. <a href="receive_circuit.pdf">Download PDF</a></p>
+</object>
+<object data="transmit_circuit.pdf" type="application/pdf" width="100%" height="500px">
+    <p>Your browser does not support inline PDFs. <a href="transmit_circuit.pdf">Download PDF</a></p>
+</object>
 
 ## software overview
 ```mermaid
