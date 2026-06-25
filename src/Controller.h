@@ -30,7 +30,7 @@ public:
     Sensors sensors; // utility functions, e.g. ref frame rotations
     void acquire_target(double*, double*, double, double, double*);
     void qrot_imu_data(double*, double*, double*, double*, double*, double*, double*);
-    void update_nav_state(int, SystemTimePoint, SystemTimePoint, SystemTimePoint, SystemTimePoint,
+    void update_nav_state(int&, SystemTimePoint, SystemTimePoint, SystemTimePoint, SystemTimePoint,
                           SystemTimePoint, double, double*,
                           int, double*, int, double*, double*, double, SystemTimePoint, double);
     ~Controller();

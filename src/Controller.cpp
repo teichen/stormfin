@@ -53,7 +53,7 @@ void Controller::process_data(double dt, double* x, double* s2, double* thrust, 
     }
 }
 
-void Controller::update_nav_state(int nav_state, SystemTimePoint t, SystemTimePoint t_comms_off, SystemTimePoint t_comms_on,
+void Controller::update_nav_state(int& nav_state, SystemTimePoint t, SystemTimePoint t_comms_off, SystemTimePoint t_comms_on,
                                  SystemTimePoint t_surface, SystemTimePoint t_dive, double d, double* q,
                                  int idx_set, double* t_set, int n_t, double* u_set,
                                  double* u_saved, double d_stop, SystemTimePoint t_stop, double d0)
@@ -74,7 +74,23 @@ void Controller::update_nav_state(int nav_state, SystemTimePoint t, SystemTimePo
     dt_comms_off = (t - t_comms_off) / dt1s; // time since stop of last communication
     dt_comms_on = (t - t_comms_on) / dt1s; // time since start of communication
 
-    if (nav_state == COMMUNICATE) // fixed communication period
+    if (nav_state == SURFACE) // do not communicate at surface or when surfacing
+    {
+        if (dt_surface > surface_period) // regularized diving
+        {
+            nav_state = DIVE;
+            t_dive = t;
+        }
+    }
+    else if (nav_state == DIVE) // do not stalk when diving
+    {
+        if (dt_dive > dive_period) // regularized surfacing
+        {
+            nav_state = SURFACE;
+            t_surface = t;
+        }
+    }
+    else if (nav_state == COMMUNICATE) // fixed communication period
     {
         if (dt_comms_on > comms_on_period)
         {
@@ -82,24 +98,19 @@ void Controller::update_nav_state(int nav_state, SystemTimePoint t, SystemTimePo
             t_comms_off = t;
         }
     }
-    if (dt_comms_off > comms_off_period) // regularized communication
+    else if (dt_comms_off > comms_off_period) // regularized communication
     {
         nav_state = COMMUNICATE;
         t_comms_on = t;
     }
-    else if (dt_dive > dive_period) // regularized surfacing
-    {
-        nav_state = SURFACE;
-        t_surface = t;
-    }
-    else if (dt_surface > surface_period) // regularized diving
-    {
-        nav_state = DIVE;
-        t_dive = t;
-    }
     else
     {
-        if (d < 30){
+        if (dt_dive > dive_period) // regularized surfacing
+        {
+            nav_state = SURFACE;
+            t_surface = t;
+        }
+        else if (d < 30){
             // abandon
             nav_state = SURFACE;
 
