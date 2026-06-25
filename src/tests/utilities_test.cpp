@@ -8,6 +8,7 @@ using std::endl;
 #include "../Utilities.h"
 #include "../GSLWrappers.h"
 #include "../LaminarModel.h"
+#include "../Acoustics.h"
 
 using namespace std;
 
@@ -17,6 +18,7 @@ int main()
 {
     Utilities utilities;
     GSLWrappers gsl;
+    Acoustics acoustics;
 
     // TEST-0 : simple matrix transpose
     double a[4];
@@ -149,6 +151,21 @@ int main()
             assert(a_w_mag < 1.0e-12);
         }
     }
+
+    // TEST-6 : Goertzel DTFT test
+    double f0 = 5;
+    double fc = 10;
+    double f1 = 15;
+    // indexing: y[0] - f0 real
+    //           y[1] - f0 imag
+    //           y[2] - fc real
+    //           y[3] - fc imag
+    //           y[4] - f1 real
+    //           y[5] - f1 imag
+    double y[6];
+    acoustics.goertzel_dtft(a_t, y, n);
+
+    cout << y[0] << " " << y[1] << " " << y[2] << " " << y[3] << " " << y[4] << " " << y[5] << endl;
 
     return 0;
 }

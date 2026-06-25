@@ -9,7 +9,7 @@ SHELL = /bin/sh
 
 OBJS_CONTROLLER_TEST = controller_test.o ../Controller.o ../Sensors.o ../Utilities.o ../KalmanFilter.o ../ComplementaryFilter.o ../Collocation.o ../GSLWrappers.o ../LaminarModel.o
 OBJS_SENSORS_TEST = sensors_test.o ../Sensors.o
-OBJS_UTILITIES_TEST = utilities_test.o ../Utilities.o ../GSLWrappers.o ../LaminarModel.o
+OBJS_UTILITIES_TEST = utilities_test.o ../Utilities.o ../GSLWrappers.o ../LaminarModel.o ../Acoustics.o
 OBJS_FILTER_TEST = filter_test.o ../KalmanFilter.o ../ComplementaryFilter.o ../Utilities.o ../GSLWrappers.o ../LaminarModel.o
 CFLAGS = -g -O0
 CC = clang++

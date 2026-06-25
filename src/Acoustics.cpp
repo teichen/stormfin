@@ -2,9 +2,6 @@
 #include <stdlib.h>
 #include <cmath>
 
-static double fc = 35.0; // carrier freq
-static double f1 = 36.0; // mark freq
-static double f0 = 34.0; // space freq
 const double PI = 3.14159265358979323846;
 
 using namespace std;
@@ -15,7 +12,7 @@ Acoustics::Acoustics()
     */
 }
 
-void Acoustics::goertzel_dtft(double* x, double* y, int n)
+void Acoustics::goertzel_dtft(double* x, double* y, int n, double f0, double fc, double f1)
 {
     /* Goertzel DTFT for demodulation
        second order infinite impulse response filter
