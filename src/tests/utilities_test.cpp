@@ -137,13 +137,14 @@ int main()
     }
     gsl.fft(a_t, a_w, n);
 
-    double a_w_mag;
+    double a_w_mag, a_w_mag_fft;
 
     for (i=0; i<(int)(n/2); i++)
     {
         a_w_mag = std::sqrt(a_w[2*i + 0] * a_w[2*i + 0] + a_w[2*i + 1] * a_w[2*i + 1]);
         if (std::abs((double)(i * f_sampling / n) - f_test) < 0.1)
         {
+            a_w_mag_fft = a_w_mag;
             assert(a_w_mag > 1.0e-5);
         }
         else
@@ -163,9 +164,24 @@ int main()
     //           y[4] - f1 real
     //           y[5] - f1 imag
     double y[6];
-    acoustics.goertzel_dtft(a_t, y, n);
+    for (i=0; i<6; i++)
+    {
+        y[i] = 0.0;
+    }
+    acoustics.goertzel_dtft(a_t, y, n, f0, fc, f1, f_sampling);
 
-    cout << y[0] << " " << y[1] << " " << y[2] << " " << y[3] << " " << y[4] << " " << y[5] << endl;
+    for (i=0; i<3; i++)
+    {
+        a_w_mag = std::sqrt(y[2*i + 0] * y[2*i + 0] + y[2*i + 1] * y[2*i + 1]);
+        if (i == 1)
+        {
+            assert(std::abs(a_w_mag - a_w_mag_fft) /  a_w_mag_fft < 0.1);
+        }
+        else
+        {
+            assert(a_w_mag < 1.0e-12);
+        }
+    }
 
     return 0;
 }

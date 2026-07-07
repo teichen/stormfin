@@ -12,7 +12,7 @@ Acoustics::Acoustics()
     */
 }
 
-void Acoustics::goertzel_dtft(double* x, double* y, int n, double f0, double fc, double f1)
+void Acoustics::goertzel_dtft(double* x, double* y, int n, double f0, double fc, double f1, double f_sampling)
 {
     /* Goertzel DTFT for demodulation
        second order infinite impulse response filter
@@ -26,15 +26,24 @@ void Acoustics::goertzel_dtft(double* x, double* y, int n, double f0, double fc,
        f0 : space (0-bit) 34kHz
     */
     int i,j,k;
-    for (i=0; i<(2*n); i++) // complex input
-    {
-        x[i] = x[i] / n; // scaled for dtft
-    }
+    //for (i=0; i<(2*n); i++) // complex input
+    //{
+    //    x[i] = x[i] / n; // scaled for dtft
+    //}
     // for frequency shift keying we can ignore the phase
     double bc, b1, b0;
-    bc = 2.0 * std::cos(2.0 * PI * fc * 1000.0);
-    b1 = 2.0 * std::cos(2.0 * PI * f1 * 1000.0);
-    b0 = 2.0 * std::cos(2.0 * PI * f0 * 1000.0);
+    bc = 2.0 * std::cos(2.0 * PI * fc / f_sampling);
+    b1 = 2.0 * std::cos(2.0 * PI * f1 / f_sampling);
+    b0 = 2.0 * std::cos(2.0 * PI * f0 / f_sampling);
+
+    // for phase accounting (helpful for unit testing)
+    double d[6];
+    d[0] = std::cos(2.0 * PI * f0 / f_sampling * (n-1));
+    d[1] = std::sin(2.0 * PI * f0 / f_sampling * (n-1));
+    d[2] = std::cos(2.0 * PI * fc / f_sampling * (n-1));
+    d[3] = std::sin(2.0 * PI * fc / f_sampling * (n-1));
+    d[4] = std::cos(2.0 * PI * f1 / f_sampling * (n-1));
+    d[5] = std::sin(2.0 * PI * f1 / f_sampling * (n-1));
 
     // recursive solution for carrier, mark, and space
     // save complex multiplier for the final output at end
@@ -73,15 +82,17 @@ void Acoustics::goertzel_dtft(double* x, double* y, int n, double f0, double fc,
         }
         for (j=0; j<2; j++)
         {
-            s0[2*k + j] = b[k] * s1[2*k + j] - s2[2*k + j];
+            s0[2*k + j] = x[2*(n-1) + j] + b[k] * s1[2*k + j] - s2[2*k + j];
             if (j==0)
             {
-                y[2*k + j] = s0[2*k + j] - s1[2*k + j] * std::cos(2.0 * PI * f[k] * 1000.0);
+                y[2*k + j] = s0[2*k + j] - s1[2*k + j] * std::cos(2.0 * PI * f[k] / f_sampling);
             }
             else if (j==1)
             {
-                y[2*k + j] = s0[2*k + j] - s1[2*k + j] * std::sin(2.0 * PI * f[k] * 1000.0);
+                y[2*k + j] = s0[2*k + j] - s1[2*k + j] * std::sin(2.0 * PI * f[k] / f_sampling);
             }
+            //y[2*k + j] *= d[2*k + j]; // phase, less important for frequency shift keying
+            y[2*k + j] *= 2; // stray factor of 2?
         }
     }
 }
